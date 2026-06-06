@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestion des Astreintes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #151820;
+    --surface2: #1c2030;
+    --border: #252a3a;
+    --accent: #4f7ef8;
+    --accent2: #7c3aed;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --text: #e8ecf5;
+    --muted: #6b7594;
+    --rabat: #4f7ef8;
+    --benguerir: #7c3aed;
+    --casa: #10b981;
+    --tanger: #f59e0b;
+    --marrakech: #ef4444;
+    --agadir: #06b6d4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #6a8ef9; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .sidebar-section h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    padding: 0 0.5rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(79,126,248,0.12); color: var(--accent); }
+
+  .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+  /* Site tags */
+  .site-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .site-tag:hover { background: var(--surface2); color: var(--text); }
+  .site-tag.active { color: var(--text); }
+
+  .site-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .site-count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    background: var(--surface2);
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  /* ── MAIN ── */
+  main {
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .page-subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  /* ── STATS CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--accent); }
+
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .stat-sub { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+  .stat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin-top: 6px;
+  }
+  .badge-green { background: rgba(16,185,129,0.15); color: var(--success); }
+  .badge-yellow { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .badge-blue { background: rgba(79,126,248,0.15); color: var(--accent); }
+
+  /* ── CALENDAR ── */
+  .calendar-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .calendar-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .cal-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .cal-btn:hover { background: var(--surface2); border-color: var(--accent); }
+
+  .cal-month {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    min-width: 180px;
+    text-align: center;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .cal-day-header {
+    text-align: center;
+    padding: 12px 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cal-day {
+    min-height: 90px;
+    padding: 8px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: pointer;
+    position: relative;
+  }
+  .cal-day:nth-child(7n) { border-right: none; }
+  .cal-day:hover { background: var(--surface2); }
+  .cal-day.other-month { opacity: 0.3; }
+  .cal-day.today { background: rgba(79,126,248,0.06); }
+
+  .day-num {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    width: 24px; height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .today .day-num {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .cal-lane-bar {
+    height: 18px;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .cal-lane-empty {
+    height: 18px;
+    margin-bottom: 2px;
+  }
+
+  .cal-bar-name {
+    font-size: 0.67rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 5px;
+    display: block;
+    width: 100%;
+  }
+
+  .cal-day {
+    min-height: 110px;
+  }
+
+  .cal-event {
+    font-size: 0.68rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  /* ── TABLE ── */
+  .table-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .table-toolbar {
+    padding: 1rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: var(--accent); }
+
+  .filter-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    cursor: pointer;
+  }
+  .filter-select:focus { border-color: var(--accent); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: var(--text); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 14px 16px;
+    font-size: 0.875rem;
+  }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-name { font-weight: 500; }
+  .user-email { font-size: 0.78rem; color: var(--muted); }
+
+  .site-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .status-active { background: rgba(16,185,129,0.15); color: var(--success); }
+  .status-standby { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .status-off { background: rgba(107,117,148,0.15); color: var(--muted); }
+
+  .action-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 4px;
+    transition: all 0.2s;
+  }
+  .action-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--accent); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 520px;
+    max-width: 95vw;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  }
+
+  .modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .modal-close {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { color: var(--text); background: var(--surface2); }
+
+  .modal-body { padding: 1.5rem; }
+
+  .form-group { margin-bottom: 1rem; }
+  .form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .form-input, .form-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* ── EQUIPES VIEW ── */
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .team-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .team-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .team-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+
+  .team-site {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .team-members {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .member-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+  }
+
+  .member-role {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  .team-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 300;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-success { border-color: var(--success); }
+  .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    OnCall Manager
+  </div>
+  <div class="header-actions">
+    <span style="font-size:0.8rem;color:var(--muted)" id="current-date"></span>
+    <button class="btn btn-primary" onclick="openModal('add-astreinte')">+ Nouvelle astreinte</button>
+  </div>
+</header>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-section">
+      <h3>Navigation</h3>
+      <div class="nav-item active" onclick="showPage('dashboard',this)">
+        <span class="nav-icon">📊</span> Tableau de bord
+      </div>
+      <div class="nav-item" onclick="showPage('calendrier',this)">
+        <span class="nav-icon">📅</span> Calendrier
+      </div>
+      <div class="nav-item" onclick="showPage('astreintes',this)">
+        <span class="nav-icon">🔔</span> Astreintes
+      </div>
+      <div class="nav-item" onclick="showPage('equipes',this)">
+        <span class="nav-icon">👥</span> Équipes
+      </div>
+      <div class="nav-item" onclick="showPage('collaborateurs',this)">
+        <span class="nav-icon">👤</span> Collaborateurs
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Sites</h3>
+      <div class="site-tag active" onclick="filterSite('tous',this)">
+        <span class="site-dot" style="background:var(--muted)"></span>
+        Tous les sites
+        <span class="site-count" id="count-tous">-</span>
+      </div>
+      <div class="site-tag" onclick="filterSite('rabat',this)">
+        <span class="site-dot" style="background:var(--rabat)"></span>
+        Rabat
+        <span class="site-count" id="count-rabat">-</span>
+      </div>
+      <div class="site-tag" onclick="filterSite('benguerir',this)">
+        <span class="site-dot" style="background:var(--benguerir)"></span>
+        Benguerir
+        <span class="site-count" id="count-benguerir">-</span>
+      </div>
+      <div class="site-tag" onclick="filterSite('casablanca',this)">
+        <span class="site-dot" style="background:var(--casa)"></span>
+        Casablanca
+        <span class="site-count" id="count-casablanca">-</span>
+      </div>
+      <div class="site-tag" onclick="filterSite('tanger',this)">
+        <span class="site-dot" style="background:var(--tanger)"></span>
+        Tanger
+        <span class="site-count" id="count-tanger">-</span>
+      </div>
+      <div class="site-tag" onclick="filterSite('marrakech',this)">
+        <span class="site-dot" style="background:var(--marrakech)"></span>
+        Marrakech
+        <span class="site-count" id="count-marrakech">-</span>
+      </div>
+      <div class="site-tag" onclick="filterSite('agadir',this)">
+        <span class="site-dot" style="background:var(--agadir)"></span>
+        Agadir
+        <span class="site-count" id="count-agadir">-</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Tableau de bord</div>
+          <div class="page-subtitle">Vue d'ensemble des astreintes en cours</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Astreintes actives</div>
+          <div class="stat-value" id="stat-actives" style="color:var(--success)">0</div>
+          <span class="stat-badge badge-green">En cours</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Collaborateurs</div>
+          <div class="stat-value" id="stat-collab" style="color:var(--accent)">0</div>
+          <span class="stat-badge badge-blue">Total</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Astreintes ce mois</div>
+          <div class="stat-value" id="stat-mois" style="color:var(--warning)">0</div>
+          <span class="stat-badge badge-yellow">Planifiées</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sites couverts</div>
+          <div class="stat-value" style="color:var(--accent2)">6</div>
+          <span class="stat-badge" style="background:rgba(124,58,237,0.15);color:var(--accent2)">Actifs</span>
+        </div>
+      </div>
+
+      <!-- Mini calendar this week -->
+      <div class="table-wrapper" style="margin-bottom:1.5rem">
+        <div class="table-toolbar" style="justify-content:space-between">
+          <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem">Astreintes à venir</span>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('calendrier',null)">Voir calendrier →</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Collaborateur</th>
+              <th>Site</th>
+              <th>Début</th>
+              <th>Fin</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="upcoming-tbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CALENDRIER -->
+    <div class="page" id="page-calendrier">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Calendrier</div>
+          <div class="page-subtitle">Visualisez les astreintes par période</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-astreinte')">+ Ajouter</button>
+      </div>
+      <div class="calendar-wrapper">
+        <div class="calendar-header">
+          <div class="calendar-nav">
+            <button class="cal-btn" onclick="changeMonth(-1)">‹</button>
+            <div class="cal-month" id="cal-month-label">—</div>
+            <button class="cal-btn" onclick="changeMonth(1)">›</button>
+          </div>
+          <button class="btn btn-ghost" onclick="goToday()">Aujourd'hui</button>
+        </div>
+        <div class="calendar-grid" id="cal-days-header"></div>
+        <div class="calendar-grid" id="cal-grid"></div>
+      </div>
+    </div>
+
+    <!-- ASTREINTES -->
+    <div class="page" id="page-astreintes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Astreintes</div>
+          <div class="page-subtitle">Gestion de toutes les astreintes</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-astreinte')">+ Nouvelle astreinte</button>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="🔍  Rechercher..." oninput="filterTable(this.value)" id="search-astreintes">
+          <select class="filter-select" onchange="filterByStatus(this.value)">
+            <option value="">Tous statuts</option>
+            <option value="active">Actif</option>
+            <option value="standby">En attente</option>
+            <option value="off">Terminé</option>
+          </select>
+          <select class="filter-select" id="site-filter-astreintes" onchange="filterBySite2(this.value)">
+            <option value="">Tous les sites</option>
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortTable('nom')">Collaborateur ↕</th>
+              <th onclick="sortTable('equipe')">Équipe ↕</th>
+              <th onclick="sortTable('site')">Site ↕</th>
+              <th onclick="sortTable('debut')">Début ↕</th>
+              <th onclick="sortTable('fin')">Fin ↕</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="astreintes-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EQUIPES -->
+    <div class="page" id="page-equipes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Équipes</div>
+          <div class="page-subtitle">Organisation par équipes et sites</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-equipe')">+ Nouvelle équipe</button>
+      </div>
+      <div class="teams-grid" id="teams-grid"></div>
+    </div>
+
+    <!-- COLLABORATEURS -->
+    <div class="page" id="page-collaborateurs">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Collaborateurs</div>
+          <div class="page-subtitle">Annuaire des collaborateurs</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-collab')">+ Nouveau collaborateur</button>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="🔍  Rechercher un collaborateur..." oninput="filterCollabs(this.value)">
+          <select class="filter-select" onchange="filterCollabSite(this.value)">
+            <option value="">Tous les sites</option>
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Poste</th>
+              <th>Équipe</th>
+              <th>Site</th>
+              <th>Contact</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="collabs-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── MODALS ── -->
+
+<!-- Add Astreinte -->
+<div class="modal-overlay" id="modal-add-astreinte">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nouvelle astreinte</div>
+      <button class="modal-close" onclick="closeModal('add-astreinte')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Collaborateur</label>
+        <select class="form-select" id="a-collab"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date début</label>
+          <input type="date" class="form-input" id="a-debut">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date fin</label>
+          <input type="date" class="form-input" id="a-fin">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="a-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Statut</label>
+          <select class="form-select" id="a-status">
+            <option value="active">Actif</option>
+            <option value="standby">En attente</option>
+            <option value="off">Terminé</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input type="text" class="form-input" id="a-notes" placeholder="Optionnel...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-astreinte')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveAstreinte()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Collaborateur -->
+<div class="modal-overlay" id="modal-add-collab">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nouveau collaborateur</div>
+      <button class="modal-close" onclick="closeModal('add-collab')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input type="text" class="form-input" id="c-prenom" placeholder="Prénom">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" class="form-input" id="c-nom" placeholder="Nom">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="c-email" placeholder="email@example.com">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Poste</label>
+          <input type="text" class="form-input" id="c-poste" placeholder="Ingénieur, Technicien...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Téléphone</label>
+          <input type="text" class="form-input" id="c-tel" placeholder="+212...">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="c-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Équipe</label>
+          <select class="form-select" id="c-equipe"></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-collab')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCollab()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Equipe -->
+<div class="modal-overlay" id="modal-add-equipe">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nouvelle équipe</div>
+      <button class="modal-close" onclick="closeModal('add-equipe')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nom de l'équipe</label>
+        <input type="text" class="form-input" id="e-nom" placeholder="Équipe Réseau, Support...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="e-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Responsable</label>
+          <select class="form-select" id="e-responsable"></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-equipe')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveEquipe()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT ASTREINTE MODAL -->
+<div class="modal-overlay" id="modal-edit-astreinte">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Modifier l'astreinte</div>
+      <button class="modal-close" onclick="document.getElementById('modal-edit-astreinte').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ea-id">
+      <div class="form-group">
+        <label class="form-label">Collaborateur</label>
+        <select class="form-select" id="ea-collab"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date début</label>
+          <input type="date" class="form-input" id="ea-debut">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date fin</label>
+          <input type="date" class="form-input" id="ea-fin">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="ea-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Statut</label>
+          <select class="form-select" id="ea-status">
+            <option value="active">Actif</option>
+            <option value="standby">En attente</option>
+            <option value="off">Terminé</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input type="text" class="form-input" id="ea-notes" placeholder="Optionnel...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-astreinte').classList.remove('open')">Annuler</button>
+      <button class="btn btn-primary" onclick="updateAstreinte()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT COLLABORATEUR MODAL -->
+<div class="modal-overlay" id="modal-edit-collab">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Modifier le collaborateur</div>
+      <button class="modal-close" onclick="document.getElementById('modal-edit-collab').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ec-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input type="text" class="form-input" id="ec-prenom">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" class="form-input" id="ec-nom">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="ec-email">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Poste</label>
+          <input type="text" class="form-input" id="ec-poste">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Téléphone</label>
+          <input type="text" class="form-input" id="ec-tel">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="ec-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Équipe</label>
+          <select class="form-select" id="ec-equipe"></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-collab').classList.remove('open')">Annuler</button>
+      <button class="btn btn-primary" onclick="updateCollab()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT EQUIPE MODAL -->
+<div class="modal-overlay" id="modal-edit-equipe">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Modifier l'équipe</div>
+      <button class="modal-close" onclick="document.getElementById('modal-edit-equipe').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ee-id">
+      <div class="form-group">
+        <label class="form-label">Nom de l'équipe</label>
+        <input type="text" class="form-input" id="ee-nom">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="ee-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Responsable</label>
+          <select class="form-select" id="ee-responsable"></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-equipe').classList.remove('open')">Annuler</button>
+      <button class="btn btn-primary" onclick="updateEquipe()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <span id="toast-msg">Enregistré avec succès</span>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+const SITES = ['rabat','benguerir','casablanca','tanger','marrakech','agadir'];
+const SITE_COLORS = {
+  rabat: '#4f7ef8', benguerir: '#7c3aed', casablanca: '#10b981',
+  tanger: '#f59e0b', marrakech: '#ef4444', agadir: '#06b6d4'
+};
+const SITE_LABELS = {
+  rabat: 'Rabat', benguerir: 'Benguerir', casablanca: 'Casablanca',
+  tanger: 'Tanger', marrakech: 'Marrakech', agadir: 'Agadir'
+};
+
+let equipes = [
+  { id: 1, nom: 'Équipe Réseau', site: 'rabat', responsable: 1 },
+  { id: 2, nom: 'Équipe Support', site: 'casablanca', responsable: 3 },
+  { id: 3, nom: 'Équipe Infra', site: 'benguerir', responsable: 5 },
+  { id: 4, nom: 'Équipe Sécurité', site: 'tanger', responsable: 7 },
+];
+
+let collaborateurs = [
+  { id:1, prenom:'Youssef', nom:'Alami', email:'y.alami@company.ma', poste:'Ingénieur Réseau', tel:'+212 6 00 11 22 33', site:'rabat', equipe:1 },
+  { id:2, prenom:'Fatima', nom:'Benali', email:'f.benali@company.ma', poste:'Technicienne SI', tel:'+212 6 00 22 33 44', site:'rabat', equipe:1 },
+  { id:3, prenom:'Karim', nom:'El Mansouri', email:'k.elmansouri@company.ma', poste:'Responsable Support', tel:'+212 6 00 33 44 55', site:'casablanca', equipe:2 },
+  { id:4, prenom:'Nadia', nom:'Hajji', email:'n.hajji@company.ma', poste:'Ingénieure Systèmes', tel:'+212 6 00 44 55 66', site:'casablanca', equipe:2 },
+  { id:5, prenom:'Mehdi', nom:'Cherkaoui', email:'m.cherkaoui@company.ma', poste:'Admin Infrastructure', tel:'+212 6 00 55 66 77', site:'benguerir', equipe:3 },
+  { id:6, prenom:'Sara', nom:'Ouazzani', email:'s.ouazzani@company.ma', poste:'Technicien Réseau', tel:'+212 6 00 66 77 88', site:'benguerir', equipe:3 },
+  { id:7, prenom:'Omar', nom:'Tazi', email:'o.tazi@company.ma', poste:'Ingénieur Sécurité', tel:'+212 6 00 77 88 99', site:'tanger', equipe:4 },
+  { id:8, prenom:'Laila', nom:'Bouzid', email:'l.bouzid@company.ma', poste:'Analyste SOC', tel:'+212 6 00 88 99 00', site:'marrakech', equipe:4 },
+  { id:9, prenom:'Hassan', nom:'Rachidi', email:'h.rachidi@company.ma', poste:'DevOps', tel:'+212 6 00 99 00 11', site:'agadir', equipe:3 },
+];
+
+let astreintes = [
+  { id:1, collabId:1, site:'rabat', debut:'2025-06-01', fin:'2025-06-07', status:'active', notes:'Semaine 23' },
+  { id:2, collabId:3, site:'casablanca', debut:'2025-06-01', fin:'2025-06-07', status:'active', notes:'' },
+  { id:3, collabId:5, site:'benguerir', debut:'2025-06-08', fin:'2025-06-14', status:'standby', notes:'' },
+  { id:4, collabId:7, site:'tanger', debut:'2025-06-08', fin:'2025-06-14', status:'standby', notes:'' },
+  { id:5, collabId:2, site:'rabat', debut:'2025-05-25', fin:'2025-05-31', status:'off', notes:'Terminé' },
+  { id:6, collabId:9, site:'agadir', debut:'2025-06-15', fin:'2025-06-21', status:'standby', notes:'' },
+];
+
+let calDate = new Date();
+let currentSiteFilter = 'tous';
+let currentPage = 'dashboard';
+
+// ── UTILS ────────────────────────────────────────────────────────────────
+function getCollab(id) { return collaborateurs.find(c => c.id === id); }
+function getEquipe(id) { return equipes.find(e => e.id === id); }
+function initials(c) { return (c.prenom[0]+c.nom[0]).toUpperCase(); }
+function avatarColor(id) {
+  const colors = ['#4f7ef8','#7c3aed','#10b981','#f59e0b','#ef4444','#06b6d4'];
+  return colors[id % colors.length];
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  const parts = d.split('-');
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  currentPage = name;
+  if (name === 'calendrier') renderCalendar();
+  if (name === 'astreintes') renderAstreintes();
+  if (name === 'equipes') renderEquipes();
+  if (name === 'collaborateurs') renderCollabs();
+  if (name === 'dashboard') renderDashboard();
+}
+
+// ── SITE FILTER ──────────────────────────────────────────────────────────
+function filterSite(site, el) {
+  currentSiteFilter = site;
+  document.querySelectorAll('.site-tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (currentPage === 'astreintes') renderAstreintes();
+  if (currentPage === 'equipes') renderEquipes();
+  if (currentPage === 'collaborateurs') renderCollabs();
+  if (currentPage === 'calendrier') renderCalendar();
+}
+
+// ── SITE COUNTS ──────────────────────────────────────────────────────────
+function updateCounts() {
+  SITES.forEach(s => {
+    const n = astreintes.filter(a => a.site === s && (a.status === 'active' || a.status === 'standby')).length;
+    document.getElementById('count-' + s).textContent = n;
+  });
+  document.getElementById('count-tous').textContent = astreintes.filter(a => a.status !== 'off').length;
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const active = astreintes.filter(a => a.status === 'active').length;
+  const mois = astreintes.filter(a => {
+    const d = new Date(a.debut);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+  document.getElementById('stat-actives').textContent = active;
+  document.getElementById('stat-collab').textContent = collaborateurs.length;
+  document.getElementById('stat-mois').textContent = mois;
+
+  const tbody = document.getElementById('upcoming-tbody');
+  const upcoming = [...astreintes]
+    .filter(a => a.fin >= today())
+    .sort((a,b) => a.debut.localeCompare(b.debut))
+    .slice(0,6);
+
+  tbody.innerHTML = upcoming.length ? upcoming.map(a => {
+    const c = getCollab(a.collabId);
+    if (!c) return '';
+    return `<tr>
+      <td>
+        <div class="user-cell">
+          <div class="avatar" style="background:${avatarColor(c.id)}">${initials(c)}</div>
+          <div><div class="user-name">${c.prenom} ${c.nom}</div><div class="user-email">${c.poste}</div></div>
+        </div>
+      </td>
+      <td>${sitePill(a.site)}</td>
+      <td>${fmtDate(a.debut)}</td>
+      <td>${fmtDate(a.fin)}</td>
+      <td>${statusPill(a.status)}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📭</div><p>Aucune astreinte à venir</p></div></td></tr>`;
+}
+
+// ── ASTREINTES TABLE ─────────────────────────────────────────────────────
+let filterText = '', filterStatus = '', filterSiteA = '';
+function renderAstreintes() {
+  const tbody = document.getElementById('astreintes-tbody');
+  let data = [...astreintes];
+  if (currentSiteFilter !== 'tous') data = data.filter(a => a.site === currentSiteFilter);
+  if (filterText) data = data.filter(a => {
+    const c = getCollab(a.collabId);
+    return c && (`${c.prenom} ${c.nom}`).toLowerCase().includes(filterText.toLowerCase());
+  });
+  if (filterStatus) data = data.filter(a => a.status === filterStatus);
+  if (filterSiteA) data = data.filter(a => a.site === filterSiteA);
+
+  tbody.innerHTML = data.length ? data.map(a => {
+    const c = getCollab(a.collabId);
+    const eq = c ? getEquipe(c.equipe) : null;
+    if (!c) return '';
+    return `<tr>
+      <td>
+        <div class="user-cell">
+          <div class="avatar" style="background:${avatarColor(c.id)}">${initials(c)}</div>
+          <div><div class="user-name">${c.prenom} ${c.nom}</div><div class="user-email">${c.email}</div></div>
+        </div>
+      </td>
+      <td style="color:var(--muted);font-size:0.82rem">${eq ? eq.nom : '—'}</td>
+      <td>${sitePill(a.site)}</td>
+      <td>${fmtDate(a.debut)}</td>
+      <td>${fmtDate(a.fin)}</td>
+      <td>${statusPill(a.status)}</td>
+      <td>
+        <button class="action-btn" title="Modifier" onclick="editAstreinte(${a.id})">✏️</button>
+        <button class="action-btn" title="Supprimer" onclick="deleteAstreinte(${a.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🔔</div><p>Aucune astreinte trouvée</p></div></td></tr>`;
+}
+
+function filterTable(v) { filterText = v; renderAstreintes(); }
+function filterByStatus(v) { filterStatus = v; renderAstreintes(); }
+function filterBySite2(v) { filterSiteA = v; renderAstreintes(); }
+
+function deleteAstreinte(id) {
+  astreintes = astreintes.filter(a => a.id !== id);
+  renderAstreintes(); renderDashboard(); updateCounts(); showToast('Astreinte supprimée');
+}
+function editAstreinte(id) {
+  const a = astreintes.find(x => x.id === id);
+  if (!a) return;
+  const sel = document.getElementById('ea-collab');
+  sel.innerHTML = collaborateurs.map(c => `<option value="${c.id}">${c.prenom} ${c.nom} (${SITE_LABELS[c.site]})</option>`).join('');
+  sel.value = a.collabId;
+  document.getElementById('ea-debut').value = a.debut;
+  document.getElementById('ea-fin').value = a.fin;
+  document.getElementById('ea-site').value = a.site;
+  document.getElementById('ea-status').value = a.status;
+  document.getElementById('ea-notes').value = a.notes || '';
+  document.getElementById('ea-id').value = a.id;
+  document.getElementById('modal-edit-astreinte').classList.add('open');
+}
+
+function updateAstreinte() {
+  const id = parseInt(document.getElementById('ea-id').value);
+  const collabId = parseInt(document.getElementById('ea-collab').value);
+  const debut = document.getElementById('ea-debut').value;
+  const fin = document.getElementById('ea-fin').value;
+  const site = document.getElementById('ea-site').value;
+  const status = document.getElementById('ea-status').value;
+  const notes = document.getElementById('ea-notes').value;
+  if (!collabId || !debut || !fin) { showToast('Veuillez remplir tous les champs'); return; }
+  const idx = astreintes.findIndex(a => a.id === id);
+  if (idx !== -1) astreintes[idx] = { id, collabId, debut, fin, site, status, notes };
+  document.getElementById('modal-edit-astreinte').classList.remove('open');
+  renderAstreintes(); renderDashboard(); updateCounts();
+  if (currentPage === 'calendrier') renderCalendar();
+  showToast('Astreinte modifiée avec succès');
+}
+
+// ── COLLABORATEURS ────────────────────────────────────────────────────────
+let collabSearch = '', collabSiteF = '';
+function renderCollabs() {
+  const tbody = document.getElementById('collabs-tbody');
+  let data = [...collaborateurs];
+  if (currentSiteFilter !== 'tous') data = data.filter(c => c.site === currentSiteFilter);
+  if (collabSearch) data = data.filter(c => (`${c.prenom} ${c.nom}`).toLowerCase().includes(collabSearch.toLowerCase()));
+  if (collabSiteF) data = data.filter(c => c.site === collabSiteF);
+
+  tbody.innerHTML = data.length ? data.map(c => {
+    const eq = getEquipe(c.equipe);
+    return `<tr>
+      <td>
+        <div class="user-cell">
+          <div class="avatar" style="background:${avatarColor(c.id)}">${initials(c)}</div>
+          <div><div class="user-name">${c.prenom} ${c.nom}</div><div class="user-email">${c.email}</div></div>
+        </div>
+      </td>
+      <td style="font-size:0.85rem">${c.poste}</td>
+      <td style="color:var(--muted);font-size:0.82rem">${eq ? eq.nom : '—'}</td>
+      <td>${sitePill(c.site)}</td>
+      <td style="font-size:0.82rem;color:var(--muted)">${c.tel}</td>
+      <td>
+        <button class="action-btn" title="Modifier" onclick="editCollab(${c.id})">✏️</button>
+        <button class="action-btn" title="Supprimer" onclick="deleteCollab(${c.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👤</div><p>Aucun collaborateur trouvé</p></div></td></tr>`;
+}
+
+function filterCollabs(v) { collabSearch = v; renderCollabs(); }
+function filterCollabSite(v) { collabSiteF = v; renderCollabs(); }
+
+function editCollab(id) {
+  const c = collaborateurs.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('ec-id').value = c.id;
+  document.getElementById('ec-prenom').value = c.prenom;
+  document.getElementById('ec-nom').value = c.nom;
+  document.getElementById('ec-email').value = c.email;
+  document.getElementById('ec-poste').value = c.poste;
+  document.getElementById('ec-tel').value = c.tel;
+  document.getElementById('ec-site').value = c.site;
+  document.getElementById('ec-equipe').innerHTML = equipes.map(e => `<option value="${e.id}">${e.nom}</option>`).join('');
+  document.getElementById('ec-equipe').value = c.equipe;
+  document.getElementById('modal-edit-collab').classList.add('open');
+}
+
+function updateCollab() {
+  const id = parseInt(document.getElementById('ec-id').value);
+  const prenom = document.getElementById('ec-prenom').value.trim();
+  const nom = document.getElementById('ec-nom').value.trim();
+  const email = document.getElementById('ec-email').value.trim();
+  const poste = document.getElementById('ec-poste').value.trim();
+  const tel = document.getElementById('ec-tel').value.trim();
+  const site = document.getElementById('ec-site').value;
+  const equipe = parseInt(document.getElementById('ec-equipe').value);
+  if (!prenom || !nom) { showToast('Prénom et nom requis'); return; }
+  const idx = collaborateurs.findIndex(c => c.id === id);
+  if (idx !== -1) collaborateurs[idx] = { id, prenom, nom, email, poste, tel, site, equipe };
+  document.getElementById('modal-edit-collab').classList.remove('open');
+  renderCollabs(); updateCounts(); renderDashboard();
+  showToast('Collaborateur modifié avec succès');
+}
+
+function deleteCollab(id) {
+  collaborateurs = collaborateurs.filter(c => c.id !== id);
+  renderCollabs(); updateCounts(); showToast('Collaborateur supprimé');
+}
+
+// ── EQUIPES ───────────────────────────────────────────────────────────────
+function renderEquipes() {
+  const grid = document.getElementById('teams-grid');
+  let data = [...equipes];
+  if (currentSiteFilter !== 'tous') data = data.filter(e => e.site === currentSiteFilter);
+
+  grid.innerHTML = data.length ? data.map(eq => {
+    const members = collaborateurs.filter(c => c.equipe === eq.id);
+    const resp = getCollab(eq.responsable);
+    return `<div class="team-card">
+      <div class="team-name">${eq.nom}</div>
+      <div class="team-site">
+        <span class="site-dot" style="background:${SITE_COLORS[eq.site]}"></span>
+        ${SITE_LABELS[eq.site]}
+      </div>
+      <div class="team-members">
+        ${members.slice(0,4).map(c => `
+          <div class="member-row">
+            <div class="avatar" style="background:${avatarColor(c.id)};width:26px;height:26px;font-size:0.65rem">${initials(c)}</div>
+            <span style="font-size:0.84rem">${c.prenom} ${c.nom}</span>
+            ${c.id === eq.responsable ? '<span class="member-role">Chef</span>' : '<span class="member-role">Membre</span>'}
+          </div>`).join('')}
+        ${members.length > 4 ? `<div style="font-size:0.78rem;color:var(--muted);padding-left:34px">+${members.length-4} autres</div>` : ''}
+        ${members.length === 0 ? `<div style="font-size:0.8rem;color:var(--muted)">Aucun membre</div>` : ''}
+      </div>
+      <div class="team-footer">
+        <span>${members.length} membre(s)</span>
+        <div style="display:flex;gap:4px">
+          <button class="action-btn" title="Modifier" onclick="editEquipe(${eq.id})">✏️</button>
+          <button class="action-btn" title="Supprimer" onclick="deleteEquipe(${eq.id})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">👥</div><p>Aucune équipe trouvée</p></div></div>`;
+}
+
+function editEquipe(id) {
+  const eq = equipes.find(x => x.id === id);
+  if (!eq) return;
+  document.getElementById('ee-id').value = eq.id;
+  document.getElementById('ee-nom').value = eq.nom;
+  document.getElementById('ee-site').value = eq.site;
+  document.getElementById('ee-responsable').innerHTML = '<option value="">— Aucun —</option>' + collaborateurs.map(c => `<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+  document.getElementById('ee-responsable').value = eq.responsable || '';
+  document.getElementById('modal-edit-equipe').classList.add('open');
+}
+
+function updateEquipe() {
+  const id = parseInt(document.getElementById('ee-id').value);
+  const nom = document.getElementById('ee-nom').value.trim();
+  const site = document.getElementById('ee-site').value;
+  const resp = parseInt(document.getElementById('ee-responsable').value) || null;
+  if (!nom) { showToast("Nom de l\'équipe requis"); return; }
+  const idx = equipes.findIndex(e => e.id === id);
+  if (idx !== -1) equipes[idx] = { id, nom, site, responsable: resp };
+  document.getElementById('modal-edit-equipe').classList.remove('open');
+  renderEquipes(); showToast('Équipe modifiée avec succès');
+}
+
+function deleteEquipe(id) {
+  equipes = equipes.filter(e => e.id !== id);
+  renderEquipes(); showToast('Équipe supprimée');
+}
+
+// ── CALENDAR ─────────────────────────────────────────────────────────────
+function renderCalendar() {
+  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const DAYS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const y = calDate.getFullYear(), m = calDate.getMonth();
+  document.getElementById('cal-month-label').textContent = `${MONTHS[m]} ${y}`;
+
+  const header = document.getElementById('cal-days-header');
+  header.innerHTML = DAYS.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+
+  const firstDay = new Date(y, m, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Monday-based
+
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const daysInPrev = new Date(y, m, 0).getDate();
+  const todayStr = today();
+
+  // Build list of all days to render
+  const allDays = [];
+  for (let i = startDow - 1; i >= 0; i--) allDays.push({ day: daysInPrev - i, cur: false, dateStr: null });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    allDays.push({ day: d, cur: true, dateStr });
+  }
+  const total = startDow + daysInMonth;
+  const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let d = 1; d <= remaining; d++) allDays.push({ day: d, cur: false, dateStr: null });
+
+  // Filter astreintes
+  let visibleA = [...astreintes];
+  if (currentSiteFilter !== 'tous') visibleA = visibleA.filter(a => a.site === currentSiteFilter);
+
+  // Assign each astreinte a row (lane) to avoid overlaps
+  const lanes = []; // lanes[i] = end date of last astreinte in lane i
+  const aLane = {};
+  visibleA.forEach(a => {
+    let placed = false;
+    for (let li = 0; li < lanes.length; li++) {
+      if (lanes[li] < a.debut) { lanes[li] = a.fin; aLane[a.id] = li; placed = true; break; }
+    }
+    if (!placed) { aLane[a.id] = lanes.length; lanes.push(a.fin); }
+  });
+
+  // For each day cell, determine which astreintes are active and their segment type
+  function getSegments(dateStr) {
+    if (!dateStr) return [];
+    return visibleA
+      .filter(a => a.debut <= dateStr && a.fin >= dateStr)
+      .map(a => ({
+        a,
+        isStart: a.debut === dateStr,
+        isEnd: a.fin === dateStr,
+        isSingle: a.debut === dateStr && a.fin === dateStr,
+        lane: aLane[a.id]
+      }));
+  }
+
+  const cells = allDays.map(({ day, cur, dateStr }) => {
+    if (!cur) return `<div class="cal-day other-month"><div class="day-num">${day}</div></div>`;
+
+    const isToday = dateStr === todayStr;
+    const segs = getSegments(dateStr);
+
+    // Build lane rows (up to 4)
+    const maxLane = segs.length ? Math.max(...segs.map(s => s.lane)) : -1;
+    let laneHtml = '';
+    for (let li = 0; li <= Math.min(maxLane, 3); li++) {
+      const seg = segs.find(s => s.lane === li);
+      if (!seg) {
+        laneHtml += `<div class="cal-lane-empty"></div>`;
+      } else {
+        const c = getCollab(seg.a.collabId);
+        if (!c) { laneHtml += `<div class="cal-lane-empty"></div>`; continue; }
+        const color = SITE_COLORS[seg.a.site];
+        const rLeft = seg.isStart || seg.isSingle ? '4px' : '0';
+        const rRight = seg.isEnd || seg.isSingle ? '4px' : '0';
+        const mLeft = seg.isStart || seg.isSingle ? '3px' : '0';
+        const mRight = seg.isEnd || seg.isSingle ? '3px' : '0';
+        const showName = seg.isStart || seg.isSingle;
+        laneHtml += `<div class="cal-lane-bar" style="
+          background:${color}28;
+          border-top:2px solid ${color};
+          border-bottom:2px solid ${color};
+          border-left:${seg.isStart || seg.isSingle ? '2px solid '+color : 'none'};
+          border-right:${seg.isEnd || seg.isSingle ? '2px solid '+color : 'none'};
+          border-radius:${rLeft} ${rRight} ${rRight} ${rLeft};
+          margin-left:${mLeft};
+          margin-right:${mRight};
+          color:${color};
+        " title="${c.prenom} ${c.nom} — ${SITE_LABELS[seg.a.site]}">${showName ? `<span class="cal-bar-name">${c.prenom} ${c.nom}</span>` : ''}</div>`;
+      }
+    }
+    const extra = segs.length > 4 ? `<div style="font-size:0.6rem;color:var(--muted);padding:1px 4px">+${segs.length-4}</div>` : '';
+
+    return `<div class="cal-day${isToday ? ' today' : ''}">
+      <div class="day-num">${day}</div>
+      ${laneHtml}${extra}
+    </div>`;
+  }).join('');
+
+  document.getElementById('cal-grid').innerHTML = cells;
+}
+
+function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
+function goToday() { calDate = new Date(); renderCalendar(); }
+
+// ── PILLS ─────────────────────────────────────────────────────────────────
+function sitePill(site) {
+  return `<span class="site-pill" style="background:${SITE_COLORS[site]}22;color:${SITE_COLORS[site]}">
+    <span style="width:6px;height:6px;border-radius:50%;background:${SITE_COLORS[site]};display:inline-block"></span>
+    ${SITE_LABELS[site]}
+  </span>`;
+}
+
+function statusPill(s) {
+  const map = { active: ['status-active','Actif'], standby: ['status-standby','En attente'], off: ['status-off','Terminé'] };
+  const [cls, label] = map[s] || ['status-off','—'];
+  return `<span class="status-pill ${cls}">${label}</span>`;
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────
+function openModal(name) {
+  if (name === 'add-astreinte') {
+    const sel = document.getElementById('a-collab');
+    sel.innerHTML = collaborateurs.map(c => `<option value="${c.id}">${c.prenom} ${c.nom} (${SITE_LABELS[c.site]})</option>`).join('');
+    const d = new Date(); const t = today();
+    document.getElementById('a-debut').value = t;
+    document.getElementById('a-fin').value = t;
+  }
+  if (name === 'add-collab') {
+    document.getElementById('c-equipe').innerHTML = equipes.map(e => `<option value="${e.id}">${e.nom}</option>`).join('');
+  }
+  if (name === 'add-equipe') {
+    document.getElementById('e-responsable').innerHTML = `<option value="">— Aucun —</option>` + collaborateurs.map(c => `<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+  }
+  document.getElementById('modal-' + name).classList.add('open');
+}
+
+function closeModal(name) {
+  document.getElementById('modal-' + name).classList.remove('open');
+}
+
+// close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ── SAVE ──────────────────────────────────────────────────────────────────
+function saveAstreinte() {
+  const collabId = parseInt(document.getElementById('a-collab').value);
+  const debut = document.getElementById('a-debut').value;
+  const fin = document.getElementById('a-fin').value;
+  const site = document.getElementById('a-site').value;
+  const status = document.getElementById('a-status').value;
+  const notes = document.getElementById('a-notes').value;
+  if (!collabId || !debut || !fin) { showToast('Veuillez remplir tous les champs'); return; }
+  const newId = Math.max(0, ...astreintes.map(a => a.id)) + 1;
+  astreintes.push({ id:newId, collabId, debut, fin, site, status, notes });
+  closeModal('add-astreinte');
+  renderAstreintes(); renderDashboard(); updateCounts();
+  if (currentPage === 'calendrier') renderCalendar();
+  showToast('Astreinte ajoutée avec succès');
+}
+
+function saveCollab() {
+  const prenom = document.getElementById('c-prenom').value.trim();
+  const nom = document.getElementById('c-nom').value.trim();
+  const email = document.getElementById('c-email').value.trim();
+  const poste = document.getElementById('c-poste').value.trim();
+  const tel = document.getElementById('c-tel').value.trim();
+  const site = document.getElementById('c-site').value;
+  const equipe = parseInt(document.getElementById('c-equipe').value);
+  if (!prenom || !nom) { showToast('Prénom et nom requis'); return; }
+  const newId = Math.max(0, ...collaborateurs.map(c => c.id)) + 1;
+  collaborateurs.push({ id:newId, prenom, nom, email, poste, tel, site, equipe });
+  closeModal('add-collab');
+  renderCollabs(); updateCounts(); renderDashboard();
+  showToast('Collaborateur ajouté');
+}
+
+function saveEquipe() {
+  const nom = document.getElementById('e-nom').value.trim();
+  const site = document.getElementById('e-site').value;
+  const resp = parseInt(document.getElementById('e-responsable').value) || null;
+  if (!nom) { showToast('Nom de l\'équipe requis'); return; }
+  const newId = Math.max(0, ...equipes.map(e => e.id)) + 1;
+  equipes.push({ id:newId, nom, site, responsable: resp });
+  closeModal('add-equipe');
+  renderEquipes(); showToast('Équipe créée');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── SORT ──────────────────────────────────────────────────────────────────
+let sortKey = '', sortAsc = true;
+function sortTable(key) {
+  if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = true; }
+  astreintes.sort((a, b) => {
+    let va, vb;
+    if (key === 'nom') { const ca = getCollab(a.collabId), cb = getCollab(b.collabId); va = ca ? ca.nom : ''; vb = cb ? cb.nom : ''; }
+    else if (key === 'equipe') { const ca = getCollab(a.collabId), cb = getCollab(b.collabId); const ea = ca ? getEquipe(ca.equipe) : null, eb = cb ? getEquipe(cb.equipe) : null; va = ea ? ea.nom : ''; vb = eb ? eb.nom : ''; }
+    else { va = a[key] || ''; vb = b[key] || ''; }
+    return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  renderAstreintes();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+function init() {
+  const d = new Date();
+  document.getElementById('current-date').textContent = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  updateCounts();
+  renderDashboard();
+}
+
+init();
+</script>
+</body>
+</html>
