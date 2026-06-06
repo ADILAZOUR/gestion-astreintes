@@ -1,0 +1,2746 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestion des Astreintes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #151820;
+    --surface2: #1c2030;
+    --border: #252a3a;
+    --accent: #4f7ef8;
+    --accent2: #7c3aed;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --text: #e8ecf5;
+    --muted: #6b7594;
+    --rabat: #4f7ef8;
+    --benguerir: #7c3aed;
+    --casa: #10b981;
+    --tanger: #f59e0b;
+    --marrakech: #ef4444;
+    --agadir: #06b6d4;
+  }
+
+  /* ── LIGHT THEME ── */
+  body.light-theme {
+    --bg: #f0f2f7;
+    --surface: #ffffff;
+    --surface2: #f5f7fc;
+    --border: #dde1ee;
+    --accent: #3b6ef0;
+    --accent2: #6d28d9;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --text: #111827;
+    --muted: #6b7280;
+  }
+  body.light-theme header {
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+  }
+  body.light-theme aside {
+    box-shadow: 1px 0 6px rgba(0,0,0,0.05);
+  }
+  body.light-theme .stat-card:hover { border-color: var(--accent); }
+  body.light-theme .toast {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+  body.light-theme .modal {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  body.light-theme tbody tr:hover { background: #f0f4ff; }
+  body.light-theme .nav-item.active { background: rgba(59,110,240,0.1); }
+  body.light-theme .site-tag:hover { background: #edf0f9; }
+  body.light-theme .cal-day:hover { background: #edf0f9; }
+  body.light-theme .today { background: rgba(59,110,240,0.07) !important; }
+  body.light-theme .team-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(59,110,240,0.1); }
+  body.light-theme .config-card { box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  body.light-theme .mode-card { box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  body.light-theme .mode-card.active { background: rgba(59,110,240,0.07); }
+  body.light-theme .info-box { background: #f8f9fd; }
+  body.light-theme .code-block { background: #f1f3fa; color: #059669; }
+  body.light-theme input[type="color"] { border-color: var(--border); }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #6a8ef9; transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .sidebar-section h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    padding: 0 0.5rem;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(79,126,248,0.12); color: var(--accent); }
+
+  .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+  /* Site tags */
+  .site-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .site-tag:hover { background: var(--surface2); color: var(--text); }
+  .site-tag.active { color: var(--text); }
+
+  .site-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .site-count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    background: var(--surface2);
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  /* ── MAIN ── */
+  main {
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .page-subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+  /* ── STATS CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--accent); }
+
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .stat-sub { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+  .stat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    margin-top: 6px;
+  }
+  .badge-green { background: rgba(16,185,129,0.15); color: var(--success); }
+  .badge-yellow { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .badge-blue { background: rgba(79,126,248,0.15); color: var(--accent); }
+
+  /* ── CALENDAR ── */
+  .calendar-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  #cal-grid {
+    overflow-y: auto;
+  }
+
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .calendar-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .cal-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .cal-btn:hover { background: var(--surface2); border-color: var(--accent); }
+
+  .cal-month {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    min-width: 180px;
+    text-align: center;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .cal-day-header {
+    text-align: center;
+    padding: 12px 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cal-day {
+    min-height: 90px;
+    padding: 8px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: pointer;
+    position: relative;
+  }
+  .cal-day:nth-child(7n) { border-right: none; }
+  .cal-day:hover { background: var(--surface2); }
+  .cal-day.other-month { opacity: 0.3; }
+  .cal-day.today { background: rgba(79,126,248,0.06); }
+
+  .day-num {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    width: 24px; height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .today .day-num {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .cal-lane-bar {
+    height: 18px;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .cal-lane-empty {
+    height: 18px;
+    margin-bottom: 2px;
+  }
+
+  .cal-bar-name {
+    font-size: 0.67rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 5px;
+    display: block;
+    width: 100%;
+  }
+
+  .cal-day {
+    min-height: 80px;
+  }
+
+  .cal-event {
+    font-size: 0.68rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  /* ── TABLE ── */
+  .table-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .table-toolbar {
+    padding: 1rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: var(--accent); }
+
+  .filter-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    cursor: pointer;
+  }
+  .filter-select:focus { border-color: var(--accent); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  thead th:hover { color: var(--text); }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 14px 16px;
+    font-size: 0.875rem;
+  }
+
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .user-name { font-weight: 500; }
+  .user-email { font-size: 0.78rem; color: var(--muted); }
+
+  .site-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .status-active { background: rgba(16,185,129,0.15); color: var(--success); }
+  .status-standby { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .status-off { background: rgba(107,117,148,0.15); color: var(--muted); }
+
+  .action-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 4px;
+    transition: all 0.2s;
+  }
+  .action-btn:hover { background: var(--surface2); color: var(--text); border-color: var(--accent); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 520px;
+    max-width: 95vw;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  }
+
+  .modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .modal-close {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { color: var(--text); background: var(--surface2); }
+
+  .modal-body { padding: 1.5rem; }
+
+  .form-group { margin-bottom: 1rem; }
+  .form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .form-input, .form-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* ── EQUIPES VIEW ── */
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .team-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .team-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .team-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+
+  .team-site {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .team-members {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .member-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+  }
+
+  .member-role {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  .team-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* empty state */
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* toast */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 300;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-success { border-color: var(--success); }
+  .toast-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+
+  /* ── CONFIG PAGE ── */
+  .config-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .config-card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .config-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .config-card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .config-card-sub { font-size: 0.8rem; color: var(--muted); margin-top: 3px; }
+
+  .config-body { padding: 1.5rem; }
+
+  .conn-badge {
+    margin-left: auto;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .badge-disconnected { background: rgba(107,117,148,0.15); color: var(--muted); }
+  .badge-connected { background: rgba(16,185,129,0.15); color: var(--success); }
+  .badge-error { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+  .form-hint { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+  .info-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .info-box-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+
+  .sp-list-row {
+    display: flex;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+    align-items: center;
+  }
+  .sp-list-row:last-child { border-bottom: none; }
+  .sp-list-name { font-weight: 600; min-width: 140px; }
+  .sp-list-cols { color: var(--muted); }
+
+  .guide-step {
+    display: flex;
+    gap: 12px;
+    padding: 8px 0;
+    font-size: 0.83rem;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+  }
+  .guide-step:last-child { border-bottom: none; }
+  .guide-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .guide-step code {
+    background: var(--surface);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 0.75rem;
+    color: var(--success);
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  .mode-card {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mode-card:hover { border-color: var(--accent); }
+  .mode-card.active { border-color: var(--accent); background: rgba(79,126,248,0.08); }
+  .mode-icon { font-size: 1.75rem; margin-bottom: 8px; }
+  .mode-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+  .mode-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+
+  /* ── SITE COLOR PRESETS ── */
+  .color-preset {
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .color-preset:hover { transform: scale(1.15); border-color: rgba(255,255,255,0.4); }
+  .color-preset.selected { border-color: #fff; transform: scale(1.15); }
+
+  /* ── SITE MANAGE BTN ── */
+  .site-tag-actions { display:none; }
+  .site-tag:hover .site-tag-actions { display:flex; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo" style="padding:4px 0">
+    <img src="data:image/webp;base64,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" alt="UM6P Digital Ecosystem Office" style="height:46px;width:auto;object-fit:contain;display:block">
+  </div>
+  <div class="header-actions">
+    <span style="font-size:0.8rem;color:var(--muted)" id="current-date"></span>
+    <button class="btn btn-ghost" id="theme-toggle-btn" onclick="toggleTheme()" title="Changer le thème" style="width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;border-radius:8px">🌙</button>
+    <button class="btn btn-primary" onclick="openModal('add-astreinte')">+ Nouvelle astreinte</button>
+  </div>
+</header>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sidebar-section">
+      <h3>Navigation</h3>
+      <div class="nav-item active" onclick="showPage('dashboard',this)">
+        <span class="nav-icon">📊</span> Tableau de bord
+      </div>
+      <div class="nav-item" onclick="showPage('calendrier',this)">
+        <span class="nav-icon">📅</span> Calendrier
+      </div>
+      <div class="nav-item" onclick="showPage('astreintes',this)">
+        <span class="nav-icon">🔔</span> Astreintes
+      </div>
+      <div class="nav-item" onclick="showPage('equipes',this)">
+        <span class="nav-icon">👥</span> Équipes
+      </div>
+      <div class="nav-item" onclick="showPage('collaborateurs',this)">
+        <span class="nav-icon">👤</span> Collaborateurs
+      </div>
+      <div class="nav-item" onclick="showPage('configuration',this)">
+        <span class="nav-icon">⚙️</span> Configuration
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:0 0.5rem;margin-bottom:0.75rem">
+        <h3 style="margin:0">Sites</h3>
+        <button class="action-btn" title="Ajouter un site" onclick="openModal('add-site')" style="width:22px;height:22px;font-size:0.75rem;border-radius:5px">+</button>
+      </div>
+      <div id="sidebar-sites-list">
+        <div class="site-tag active" id="site-tag-tous" onclick="filterSite('tous',this)">
+          <span class="site-dot" style="background:var(--muted)"></span>
+          Tous les sites
+          <span class="site-count" id="count-tous">-</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Tableau de bord</div>
+          <div class="page-subtitle">Vue d'ensemble des astreintes en cours</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Astreintes actives</div>
+          <div class="stat-value" id="stat-actives" style="color:var(--success)">0</div>
+          <span class="stat-badge badge-green">En cours</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Collaborateurs</div>
+          <div class="stat-value" id="stat-collab" style="color:var(--accent)">0</div>
+          <span class="stat-badge badge-blue">Total</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Astreintes ce mois</div>
+          <div class="stat-value" id="stat-mois" style="color:var(--warning)">0</div>
+          <span class="stat-badge badge-yellow">Planifiées</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sites couverts</div>
+          <div class="stat-value" id="stat-sites" style="color:var(--accent2)">6</div>
+          <span class="stat-badge" style="background:rgba(124,58,237,0.15);color:var(--accent2)">Actifs</span>
+        </div>
+      </div>
+
+      <!-- Mini calendar this week -->
+      <div class="table-wrapper" style="margin-bottom:1.5rem">
+        <div class="table-toolbar" style="justify-content:space-between">
+          <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem">Astreintes à venir</span>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('calendrier',null)">Voir calendrier →</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Collaborateur</th>
+              <th>Site</th>
+              <th>Début</th>
+              <th>Fin</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="upcoming-tbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CALENDRIER -->
+    <div class="page" id="page-calendrier">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Calendrier</div>
+          <div class="page-subtitle">Visualisez les astreintes par période</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-astreinte')">+ Ajouter</button>
+      </div>
+      <div class="calendar-wrapper">
+        <div class="calendar-header">
+          <div class="calendar-nav">
+            <button class="cal-btn" onclick="changeMonth(-1)">‹</button>
+            <div class="cal-month" id="cal-month-label">—</div>
+            <button class="cal-btn" onclick="changeMonth(1)">›</button>
+          </div>
+          <button class="btn btn-ghost" onclick="goToday()">Aujourd'hui</button>
+        </div>
+        <div class="calendar-grid" id="cal-days-header"></div>
+        <div class="calendar-grid" id="cal-grid"></div>
+      </div>
+    </div>
+
+    <!-- ASTREINTES -->
+    <div class="page" id="page-astreintes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Astreintes</div>
+          <div class="page-subtitle">Gestion de toutes les astreintes</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-astreinte')">+ Nouvelle astreinte</button>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="🔍  Rechercher..." oninput="filterTable(this.value)" id="search-astreintes">
+          <select class="filter-select" onchange="filterByStatus(this.value)">
+            <option value="">Tous statuts</option>
+            <option value="active">Actif</option>
+            <option value="standby">En attente</option>
+            <option value="off">Terminé</option>
+          </select>
+          <select class="filter-select" id="site-filter-astreintes" onchange="filterBySite2(this.value)">
+            <option value="">Tous les sites</option>
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortTable('nom')">Collaborateur ↕</th>
+              <th onclick="sortTable('equipe')">Équipe ↕</th>
+              <th onclick="sortTable('site')">Site ↕</th>
+              <th onclick="sortTable('debut')">Début ↕</th>
+              <th onclick="sortTable('fin')">Fin ↕</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="astreintes-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EQUIPES -->
+    <div class="page" id="page-equipes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Équipes</div>
+          <div class="page-subtitle">Organisation par équipes et sites</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-equipe')">+ Nouvelle équipe</button>
+      </div>
+      <div class="teams-grid" id="teams-grid"></div>
+    </div>
+
+    <!-- COLLABORATEURS -->
+    <div class="page" id="page-collaborateurs">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Collaborateurs</div>
+          <div class="page-subtitle">Annuaire des collaborateurs</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-collab')">+ Nouveau collaborateur</button>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="🔍  Rechercher un collaborateur..." oninput="filterCollabs(this.value)">
+          <select class="filter-select" onchange="filterCollabSite(this.value)">
+            <option value="">Tous les sites</option>
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Poste</th>
+              <th>Équipe</th>
+              <th>Site</th>
+              <th>Contact</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="collabs-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONFIGURATION -->
+    <div class="page" id="page-configuration">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Configuration</div>
+          <div class="page-subtitle">Connexion SharePoint & Power Automate</div>
+        </div>
+        <button class="btn btn-primary" onclick="saveConfig()">💾 Sauvegarder</button>
+      </div>
+
+      <!-- STATUS BANNER -->
+      <div id="config-status-banner" style="display:none;padding:12px 18px;border-radius:10px;margin-bottom:1.5rem;font-size:0.875rem;display:flex;align-items:center;gap:10px"></div>
+
+      <!-- SHAREPOINT SECTION -->
+      <div class="config-card">
+        <div class="config-card-header">
+          <div class="config-icon" style="background:rgba(0,120,212,0.15);color:#0078d4">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 2C9.46 2 7 4.46 7 7.5c0 .28.02.56.06.83A5.5 5.5 0 0 0 2 13.5C2 16.54 4.46 19 7.5 19H19a3 3 0 0 0 3-3 3 3 0 0 0-2.32-2.93A5.5 5.5 0 0 0 15 7.5c0-.17-.01-.34-.03-.5A3.5 3.5 0 0 0 12.5 2z"/></svg>
+          </div>
+          <div>
+            <div class="config-card-title">SharePoint Lists</div>
+            <div class="config-card-sub">Stockage des données (Collaborateurs, Équipes, Astreintes)</div>
+          </div>
+          <div id="sp-status" class="conn-badge badge-disconnected">Non connecté</div>
+        </div>
+        <div class="config-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">URL du site SharePoint</label>
+              <input type="text" class="form-input" id="cfg-sp-url" placeholder="https://votreSociete.sharepoint.com/sites/MonSite">
+              <div class="form-hint">URL de votre site SharePoint</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Client ID (Azure App)</label>
+              <input type="text" class="form-input" id="cfg-sp-clientid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+              <div class="form-hint">ID de votre application Azure AD</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nom liste — Collaborateurs</label>
+              <input type="text" class="form-input" id="cfg-list-collab" placeholder="Collaborateurs" value="Collaborateurs">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nom liste — Équipes</label>
+              <input type="text" class="form-input" id="cfg-list-equipes" placeholder="Equipes" value="Equipes">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Nom liste — Astreintes</label>
+              <input type="text" class="form-input" id="cfg-list-astreintes" placeholder="Astreintes" value="Astreintes">
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end">
+              <button class="btn btn-ghost" style="width:100%" onclick="testSharePoint()">🔗 Tester la connexion</button>
+            </div>
+          </div>
+          <div class="info-box">
+            <div class="info-box-title">📋 Listes SharePoint à créer</div>
+            <div class="info-box-body">
+              <div class="sp-list-row">
+                <span class="sp-list-name">📁 Collaborateurs</span>
+                <span class="sp-list-cols">Colonnes : Prenom, Nom, Email, Poste, Tel, Site, EquipeId</span>
+              </div>
+              <div class="sp-list-row">
+                <span class="sp-list-name">📁 Equipes</span>
+                <span class="sp-list-cols">Colonnes : NomEquipe, Site, ResponsableId</span>
+              </div>
+              <div class="sp-list-row">
+                <span class="sp-list-name">📁 Astreintes</span>
+                <span class="sp-list-cols">Colonnes : CollaborateurId, Site, DateDebut, DateFin, Statut, Notes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POWER AUTOMATE SECTION -->
+      <div class="config-card" style="margin-top:1.5rem">
+        <div class="config-card-header">
+          <div class="config-icon" style="background:rgba(0,176,240,0.15);color:#00b0f0">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z"/></svg>
+          </div>
+          <div>
+            <div class="config-card-title">Power Automate — Email automatique</div>
+            <div class="config-card-sub">Envoi email au collaborateur + CC responsable à chaque nouvelle astreinte</div>
+          </div>
+          <div id="pa-status" class="conn-badge badge-disconnected">Non connecté</div>
+        </div>
+        <div class="config-body">
+          <div class="form-group">
+            <label class="form-label">URL du Webhook Power Automate</label>
+            <input type="text" class="form-input" id="cfg-pa-webhook" placeholder="https://prod-xx.westeurope.logic.azure.com:443/workflows/...">
+            <div class="form-hint">URL HTTP POST de votre flow Power Automate</div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email expéditeur (From)</label>
+              <input type="email" class="form-input" id="cfg-pa-from" placeholder="noreply@votresociete.ma">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Objet de l'email</label>
+              <input type="text" class="form-input" id="cfg-pa-subject" placeholder="[Astreinte] Notification de planification" value="[Astreinte] Notification de planification">
+            </div>
+          </div>
+          <div class="form-group">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <label class="form-label" style="margin:0">Corps de l'email (HTML supporté)</label>
+              <button class="btn btn-ghost" style="font-size:0.75rem;padding:4px 10px" onclick="resetEmailTemplate()">↺ Template par défaut</button>
+            </div>
+            <textarea class="form-input" id="cfg-pa-body" rows="8" style="resize:vertical;font-family:monospace;font-size:0.8rem"></textarea>
+            <div class="form-hint">Variables disponibles : {PRENOM} {NOM} {SITE} {DATE_DEBUT} {DATE_FIN} {STATUT} {RESPONSABLE}</div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <button class="btn btn-ghost" style="width:100%" onclick="testWebhook()">⚡ Tester le webhook</button>
+            </div>
+            <div class="form-group">
+              <button class="btn btn-ghost" style="width:100%" onclick="showPAGuide()">📖 Guide Power Automate</button>
+            </div>
+          </div>
+          <div class="info-box" id="pa-guide" style="display:none">
+            <div class="info-box-title">🔧 Comment créer le Flow Power Automate</div>
+            <div class="info-box-body">
+              <div class="guide-step"><span class="guide-num">1</span><span>Ouvrir <strong>Power Automate</strong> → Créer → Flux instantané</span></div>
+              <div class="guide-step"><span class="guide-num">2</span><span>Choisir déclencheur : <strong>"Lors de la réception d'une requête HTTP"</strong></span></div>
+              <div class="guide-step"><span class="guide-num">3</span><span>Copier le schéma JSON ci-dessous dans le champ "Corps JSON de la demande"</span></div>
+              <div class="guide-step"><span class="guide-num">4</span><span>Ajouter action : <strong>"Envoyer un e-mail (V2)"</strong> Outlook</span></div>
+              <div class="guide-step"><span class="guide-num">5</span><span>Champs : À → <code>body/emailTo</code> / CC → <code>body/emailCC</code> / Objet → <code>body/subject</code> / Corps → <code>body/body</code></span></div>
+              <div class="guide-step"><span class="guide-num">6</span><span>Sauvegarder → Copier l'<strong>URL HTTP POST</strong> généré → Coller ci-dessus</span></div>
+              <div style="margin-top:12px">
+                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">Schéma JSON à coller dans Power Automate :</div>
+                <pre class="code-block">{
+  "type": "object",
+  "properties": {
+    "emailTo":   { "type": "string" },
+    "emailCC":   { "type": "string" },
+    "subject":   { "type": "string" },
+    "body":      { "type": "string" },
+    "prenom":    { "type": "string" },
+    "nom":       { "type": "string" },
+    "site":      { "type": "string" },
+    "dateDebut": { "type": "string" },
+    "dateFin":   { "type": "string" },
+    "statut":    { "type": "string" }
+  }
+}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODE SECTION -->
+      <div class="config-card" style="margin-top:1.5rem">
+        <div class="config-card-header">
+          <div class="config-icon" style="background:rgba(79,126,248,0.15);color:var(--accent)">🗄️</div>
+          <div>
+            <div class="config-card-title">Mode de stockage actif</div>
+            <div class="config-card-sub">Choisir comment les données sont sauvegardées</div>
+          </div>
+        </div>
+        <div class="config-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
+            <div class="mode-card" id="mode-local" onclick="setMode('local')">
+              <div class="mode-icon">💾</div>
+              <div class="mode-title">LocalStorage</div>
+              <div class="mode-desc">Navigateur local<br>Usage personnel</div>
+            </div>
+            <div class="mode-card" id="mode-sharepoint" onclick="setMode('sharepoint')">
+              <div class="mode-icon">☁️</div>
+              <div class="mode-title">SharePoint</div>
+              <div class="mode-desc">Microsoft 365<br>Équipe & entreprise</div>
+            </div>
+            <div class="mode-card" id="mode-demo" onclick="setMode('demo')">
+              <div class="mode-icon">🧪</div>
+              <div class="mode-title">Démo</div>
+              <div class="mode-desc">Données exemples<br>Test uniquement</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOCALSTORAGE SECTION -->
+      <div class="config-card" style="margin-top:1.5rem">
+        <div class="config-card-header">
+          <div class="config-icon" style="background:rgba(16,185,129,0.15);color:var(--success)">💾</div>
+          <div>
+            <div class="config-card-title">Stockage local (LocalStorage)</div>
+            <div class="config-card-sub">Données sauvegardées dans votre navigateur — aucun serveur requis</div>
+          </div>
+          <div class="conn-badge badge-connected">✓ Actif</div>
+        </div>
+        <div class="config-body">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem">
+            <div class="stat-card" style="text-align:center">
+              <div class="stat-label">Collaborateurs</div>
+              <div class="stat-value" id="ls-nb-collabs" style="color:var(--accent);font-size:1.6rem">0</div>
+            </div>
+            <div class="stat-card" style="text-align:center">
+              <div class="stat-label">Astreintes</div>
+              <div class="stat-value" id="ls-nb-astreintes" style="color:var(--success);font-size:1.6rem">0</div>
+            </div>
+            <div class="stat-card" style="text-align:center">
+              <div class="stat-label">Espace utilisé</div>
+              <div class="stat-value" id="ls-size" style="color:var(--warning);font-size:1.6rem">0</div>
+              <div class="stat-sub">KB / ~5 MB max</div>
+            </div>
+          </div>
+          <div class="info-box" style="margin-bottom:1rem">
+            <div class="info-box-title">ℹ️ Comment fonctionne le stockage local</div>
+            <div class="info-box-body">
+              <div class="guide-step"><span class="guide-num">✓</span><span>Toutes vos données (astreintes, collaborateurs, équipes, sites) sont sauvegardées <strong>automatiquement</strong> dans votre navigateur</span></div>
+              <div class="guide-step"><span class="guide-num">✓</span><span>Les données <strong>persistent entre les sessions</strong> — elles restent même après fermeture du navigateur</span></div>
+              <div class="guide-step"><span class="guide-num">⚠️</span><span>Les données sont liées à <strong>ce navigateur et cet ordinateur</strong> uniquement</span></div>
+              <div class="guide-step"><span class="guide-num">💡</span><span>Utilisez <strong>Export JSON</strong> pour faire une sauvegarde ou partager avec un collègue</span></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
+            <button class="btn btn-primary" onclick="exportData()">📤 Exporter les données (JSON)</button>
+            <label class="btn btn-ghost" style="cursor:pointer;text-align:center">
+              📥 Importer une sauvegarde
+              <input type="file" accept=".json" onchange="importData(event)" style="display:none">
+            </label>
+            <button class="btn btn-ghost" style="color:var(--danger);border-color:var(--danger)" onclick="clearAllData()">🗑 Effacer toutes les données</button>
+          </div>
+        </div>
+      </div>
+
+      </main>
+</div>
+
+<!-- ── MODALS ── -->
+
+<!-- Add Astreinte -->
+<div class="modal-overlay" id="modal-add-astreinte">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nouvelle astreinte</div>
+      <button class="modal-close" onclick="closeModal('add-astreinte')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Collaborateur</label>
+        <select class="form-select" id="a-collab"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date début</label>
+          <input type="date" class="form-input" id="a-debut">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date fin</label>
+          <input type="date" class="form-input" id="a-fin">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="a-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Statut</label>
+          <select class="form-select" id="a-status">
+            <option value="active">Actif</option>
+            <option value="standby">En attente</option>
+            <option value="off">Terminé</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input type="text" class="form-input" id="a-notes" placeholder="Optionnel...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-astreinte')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveAstreinte()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Collaborateur -->
+<div class="modal-overlay" id="modal-add-collab">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nouveau collaborateur</div>
+      <button class="modal-close" onclick="closeModal('add-collab')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input type="text" class="form-input" id="c-prenom" placeholder="Prénom">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" class="form-input" id="c-nom" placeholder="Nom">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="c-email" placeholder="email@example.com">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Poste</label>
+          <input type="text" class="form-input" id="c-poste" placeholder="Ingénieur, Technicien...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Téléphone</label>
+          <input type="text" class="form-input" id="c-tel" placeholder="+212...">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="c-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Équipe</label>
+          <select class="form-select" id="c-equipe"></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-collab')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCollab()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Equipe -->
+<div class="modal-overlay" id="modal-add-equipe">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Nouvelle équipe</div>
+      <button class="modal-close" onclick="closeModal('add-equipe')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nom de l'équipe</label>
+        <input type="text" class="form-input" id="e-nom" placeholder="Équipe Réseau, Support...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="e-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Responsable</label>
+          <select class="form-select" id="e-responsable"></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-equipe')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveEquipe()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT ASTREINTE MODAL -->
+<div class="modal-overlay" id="modal-edit-astreinte">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Modifier l'astreinte</div>
+      <button class="modal-close" onclick="document.getElementById('modal-edit-astreinte').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ea-id">
+      <div class="form-group">
+        <label class="form-label">Collaborateur</label>
+        <select class="form-select" id="ea-collab"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date début</label>
+          <input type="date" class="form-input" id="ea-debut">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date fin</label>
+          <input type="date" class="form-input" id="ea-fin">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="ea-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Statut</label>
+          <select class="form-select" id="ea-status">
+            <option value="active">Actif</option>
+            <option value="standby">En attente</option>
+            <option value="off">Terminé</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <input type="text" class="form-input" id="ea-notes" placeholder="Optionnel...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-astreinte').classList.remove('open')">Annuler</button>
+      <button class="btn btn-primary" onclick="updateAstreinte()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT COLLABORATEUR MODAL -->
+<div class="modal-overlay" id="modal-edit-collab">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Modifier le collaborateur</div>
+      <button class="modal-close" onclick="document.getElementById('modal-edit-collab').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ec-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input type="text" class="form-input" id="ec-prenom">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input type="text" class="form-input" id="ec-nom">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="ec-email">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Poste</label>
+          <input type="text" class="form-input" id="ec-poste">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Téléphone</label>
+          <input type="text" class="form-input" id="ec-tel">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="ec-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Équipe</label>
+          <select class="form-select" id="ec-equipe"></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-collab').classList.remove('open')">Annuler</button>
+      <button class="btn btn-primary" onclick="updateCollab()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT EQUIPE MODAL -->
+<div class="modal-overlay" id="modal-edit-equipe">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Modifier l'équipe</div>
+      <button class="modal-close" onclick="document.getElementById('modal-edit-equipe').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ee-id">
+      <div class="form-group">
+        <label class="form-label">Nom de l'équipe</label>
+        <input type="text" class="form-input" id="ee-nom">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Site</label>
+          <select class="form-select" id="ee-site">
+            <option value="rabat">Rabat</option>
+            <option value="benguerir">Benguerir</option>
+            <option value="casablanca">Casablanca</option>
+            <option value="tanger">Tanger</option>
+            <option value="marrakech">Marrakech</option>
+            <option value="agadir">Agadir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Responsable</label>
+          <select class="form-select" id="ee-responsable"></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-edit-equipe').classList.remove('open')">Annuler</button>
+      <button class="btn btn-primary" onclick="updateEquipe()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SITE MODAL -->
+<div class="modal-overlay" id="modal-add-site">
+  <div class="modal" style="width:420px">
+    <div class="modal-header">
+      <div class="modal-title">➕ Ajouter un site</div>
+      <button class="modal-close" onclick="closeModal('add-site')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nom du site</label>
+        <input type="text" class="form-input" id="ns-label" placeholder="Ex : Fès, Oujda, Laayoune...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Identifiant (slug)</label>
+          <input type="text" class="form-input" id="ns-id" placeholder="fes, oujda... (sans accents)">
+          <div class="form-hint">Lettres minuscules, sans espaces</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Couleur</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="color" id="ns-color" value="#4f7ef8" style="width:48px;height:38px;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:transparent;padding:2px">
+            <div id="ns-color-preview" style="flex:1;height:38px;border-radius:6px;background:#4f7ef8;transition:background 0.2s"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:0.5rem">
+        <div class="color-preset" style="background:#4f7ef8" onclick="setColorPreset('#4f7ef8')"></div>
+        <div class="color-preset" style="background:#7c3aed" onclick="setColorPreset('#7c3aed')"></div>
+        <div class="color-preset" style="background:#10b981" onclick="setColorPreset('#10b981')"></div>
+        <div class="color-preset" style="background:#f59e0b" onclick="setColorPreset('#f59e0b')"></div>
+        <div class="color-preset" style="background:#ef4444" onclick="setColorPreset('#ef4444')"></div>
+        <div class="color-preset" style="background:#06b6d4" onclick="setColorPreset('#06b6d4')"></div>
+        <div class="color-preset" style="background:#ec4899" onclick="setColorPreset('#ec4899')"></div>
+        <div class="color-preset" style="background:#f97316" onclick="setColorPreset('#f97316')"></div>
+        <div class="color-preset" style="background:#84cc16" onclick="setColorPreset('#84cc16')"></div>
+        <div class="color-preset" style="background:#14b8a6" onclick="setColorPreset('#14b8a6')"></div>
+        <div class="color-preset" style="background:#a855f7" onclick="setColorPreset('#a855f7')"></div>
+        <div class="color-preset" style="background:#6366f1" onclick="setColorPreset('#6366f1')"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-site')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveSite()">➕ Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <span id="toast-msg">Enregistré avec succès</span>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────
+// Dynamic sites — persisted in localStorage
+let sites = JSON.parse(localStorage.getItem('oncall_sites') || 'null') || [
+  { id:'rabat',      label:'Rabat',      color:'#4f7ef8' },
+  { id:'benguerir',  label:'Benguerir',  color:'#7c3aed' },
+  { id:'casablanca', label:'Casablanca', color:'#10b981' },
+  { id:'tanger',     label:'Tanger',     color:'#f59e0b' },
+  { id:'marrakech',  label:'Marrakech',  color:'#ef4444' },
+  { id:'agadir',     label:'Agadir',     color:'#06b6d4' }
+];
+function getSite(id) { return sites.find(s => s.id === id) || { id, label: id, color: '#6b7594' }; }
+// Compatibility helpers (replaces old SITES / SITE_COLORS / SITE_LABELS)
+function SITE_COLOR(id) { return getSite(id).color; }
+function SITE_LABEL(id) { return getSite(id).label; }
+// Legacy aliases used inside render functions
+const SITE_COLORS = new Proxy({}, { get: (_, k) => SITE_COLOR(k) });
+const SITE_LABELS = new Proxy({}, { get: (_, k) => SITE_LABEL(k) });
+function saveSites() { localStorage.setItem('oncall_sites', JSON.stringify(sites)); }
+
+let equipes = [
+  { id: 1, nom: 'Équipe Réseau', site: 'rabat', responsable: 1 },
+  { id: 2, nom: 'Équipe Support', site: 'casablanca', responsable: 3 },
+  { id: 3, nom: 'Équipe Infra', site: 'benguerir', responsable: 5 },
+  { id: 4, nom: 'Équipe Sécurité', site: 'tanger', responsable: 7 },
+];
+
+let collaborateurs = [
+  { id:1, prenom:'Youssef', nom:'Alami', email:'y.alami@company.ma', poste:'Ingénieur Réseau', tel:'+212 6 00 11 22 33', site:'rabat', equipe:1 },
+  { id:2, prenom:'Fatima', nom:'Benali', email:'f.benali@company.ma', poste:'Technicienne SI', tel:'+212 6 00 22 33 44', site:'rabat', equipe:1 },
+  { id:3, prenom:'Karim', nom:'El Mansouri', email:'k.elmansouri@company.ma', poste:'Responsable Support', tel:'+212 6 00 33 44 55', site:'casablanca', equipe:2 },
+  { id:4, prenom:'Nadia', nom:'Hajji', email:'n.hajji@company.ma', poste:'Ingénieure Systèmes', tel:'+212 6 00 44 55 66', site:'casablanca', equipe:2 },
+  { id:5, prenom:'Mehdi', nom:'Cherkaoui', email:'m.cherkaoui@company.ma', poste:'Admin Infrastructure', tel:'+212 6 00 55 66 77', site:'benguerir', equipe:3 },
+  { id:6, prenom:'Sara', nom:'Ouazzani', email:'s.ouazzani@company.ma', poste:'Technicien Réseau', tel:'+212 6 00 66 77 88', site:'benguerir', equipe:3 },
+  { id:7, prenom:'Omar', nom:'Tazi', email:'o.tazi@company.ma', poste:'Ingénieur Sécurité', tel:'+212 6 00 77 88 99', site:'tanger', equipe:4 },
+  { id:8, prenom:'Laila', nom:'Bouzid', email:'l.bouzid@company.ma', poste:'Analyste SOC', tel:'+212 6 00 88 99 00', site:'marrakech', equipe:4 },
+  { id:9, prenom:'Hassan', nom:'Rachidi', email:'h.rachidi@company.ma', poste:'DevOps', tel:'+212 6 00 99 00 11', site:'agadir', equipe:3 },
+];
+
+let astreintes = [
+  { id:1, collabId:1, site:'rabat', debut:'2025-06-01', fin:'2025-06-07', status:'active', notes:'Semaine 23' },
+  { id:2, collabId:3, site:'casablanca', debut:'2025-06-01', fin:'2025-06-07', status:'active', notes:'' },
+  { id:3, collabId:5, site:'benguerir', debut:'2025-06-08', fin:'2025-06-14', status:'standby', notes:'' },
+  { id:4, collabId:7, site:'tanger', debut:'2025-06-08', fin:'2025-06-14', status:'standby', notes:'' },
+  { id:5, collabId:2, site:'rabat', debut:'2025-05-25', fin:'2025-05-31', status:'off', notes:'Terminé' },
+  { id:6, collabId:9, site:'agadir', debut:'2025-06-15', fin:'2025-06-21', status:'standby', notes:'' },
+];
+
+let calDate = new Date();
+let currentSiteFilter = 'tous';
+let currentPage = 'dashboard';
+
+// ── UTILS ────────────────────────────────────────────────────────────────
+function getCollab(id) { return collaborateurs.find(c => c.id === id); }
+function getEquipe(id) { return equipes.find(e => e.id === id); }
+function initials(c) { return (c.prenom[0]+c.nom[0]).toUpperCase(); }
+function avatarColor(id) {
+  const colors = ['#4f7ef8','#7c3aed','#10b981','#f59e0b','#ef4444','#06b6d4'];
+  return colors[id % colors.length];
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  const parts = d.split('-');
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ── NAVIGATION ───────────────────────────────────────────────────────────
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  currentPage = name;
+  if (name === 'calendrier') renderCalendar();
+  if (name === 'astreintes') renderAstreintes();
+  if (name === 'equipes') renderEquipes();
+  if (name === 'collaborateurs') renderCollabs();
+  if (name === 'dashboard') renderDashboard();
+}
+
+// ── SITE FILTER ──────────────────────────────────────────────────────────
+function filterSite(site, el) {
+  currentSiteFilter = site;
+  document.querySelectorAll('.site-tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (currentPage === 'astreintes') renderAstreintes();
+  if (currentPage === 'equipes') renderEquipes();
+  if (currentPage === 'collaborateurs') renderCollabs();
+  if (currentPage === 'calendrier') renderCalendar();
+}
+
+// ── SITE COUNTS ──────────────────────────────────────────────────────────
+function updateCounts() {
+  SITES.forEach(s => {
+    const n = astreintes.filter(a => a.site === s && (a.status === 'active' || a.status === 'standby')).length;
+    document.getElementById('count-' + s).textContent = n;
+  });
+  document.getElementById('count-tous').textContent = astreintes.filter(a => a.status !== 'off').length;
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const active = astreintes.filter(a => a.status === 'active').length;
+  const mois = astreintes.filter(a => {
+    const d = new Date(a.debut);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+  document.getElementById('stat-actives').textContent = active;
+  document.getElementById('stat-collab').textContent = collaborateurs.length;
+  document.getElementById('stat-mois').textContent = mois;
+
+  const tbody = document.getElementById('upcoming-tbody');
+  const upcoming = [...astreintes]
+    .filter(a => a.fin >= today())
+    .sort((a,b) => a.debut.localeCompare(b.debut))
+    .slice(0,6);
+
+  tbody.innerHTML = upcoming.length ? upcoming.map(a => {
+    const c = getCollab(a.collabId);
+    if (!c) return '';
+    return `<tr>
+      <td>
+        <div class="user-cell">
+          <div class="avatar" style="background:${avatarColor(c.id)}">${initials(c)}</div>
+          <div><div class="user-name">${c.prenom} ${c.nom}</div><div class="user-email">${c.poste}</div></div>
+        </div>
+      </td>
+      <td>${sitePill(a.site)}</td>
+      <td>${fmtDate(a.debut)}</td>
+      <td>${fmtDate(a.fin)}</td>
+      <td>${statusPill(a.status)}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📭</div><p>Aucune astreinte à venir</p></div></td></tr>`;
+}
+
+// ── ASTREINTES TABLE ─────────────────────────────────────────────────────
+let filterText = '', filterStatus = '', filterSiteA = '';
+function renderAstreintes() {
+  const tbody = document.getElementById('astreintes-tbody');
+  let data = [...astreintes];
+  if (currentSiteFilter !== 'tous') data = data.filter(a => a.site === currentSiteFilter);
+  if (filterText) data = data.filter(a => {
+    const c = getCollab(a.collabId);
+    return c && (`${c.prenom} ${c.nom}`).toLowerCase().includes(filterText.toLowerCase());
+  });
+  if (filterStatus) data = data.filter(a => a.status === filterStatus);
+  if (filterSiteA) data = data.filter(a => a.site === filterSiteA);
+
+  tbody.innerHTML = data.length ? data.map(a => {
+    const c = getCollab(a.collabId);
+    const eq = c ? getEquipe(c.equipe) : null;
+    if (!c) return '';
+    return `<tr>
+      <td>
+        <div class="user-cell">
+          <div class="avatar" style="background:${avatarColor(c.id)}">${initials(c)}</div>
+          <div><div class="user-name">${c.prenom} ${c.nom}</div><div class="user-email">${c.email}</div></div>
+        </div>
+      </td>
+      <td style="color:var(--muted);font-size:0.82rem">${eq ? eq.nom : '—'}</td>
+      <td>${sitePill(a.site)}</td>
+      <td>${fmtDate(a.debut)}</td>
+      <td>${fmtDate(a.fin)}</td>
+      <td>${statusPill(a.status)}</td>
+      <td>
+        <button class="action-btn" title="Modifier" onclick="editAstreinte(${a.id})">✏️</button>
+        <button class="action-btn" title="Supprimer" onclick="deleteAstreinte(${a.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🔔</div><p>Aucune astreinte trouvée</p></div></td></tr>`;
+}
+
+function filterTable(v) { filterText = v; renderAstreintes(); }
+function filterByStatus(v) { filterStatus = v; renderAstreintes(); }
+function filterBySite2(v) { filterSiteA = v; renderAstreintes(); }
+
+function deleteAstreinte(id) {
+  astreintes = astreintes.filter(a => a.id !== id);
+  persistAstreintes();
+  renderAstreintes(); renderDashboard(); updateCounts(); showToast('🗑 Astreinte supprimée');
+}
+function editAstreinte(id) {
+  const a = astreintes.find(x => x.id === id);
+  if (!a) return;
+  const sel = document.getElementById('ea-collab');
+  sel.innerHTML = collaborateurs.map(c => `<option value="${c.id}">${c.prenom} ${c.nom} (${SITE_LABELS[c.site]})</option>`).join('');
+  sel.value = a.collabId;
+  document.getElementById('ea-debut').value = a.debut;
+  document.getElementById('ea-fin').value = a.fin;
+  document.getElementById('ea-site').value = a.site;
+  document.getElementById('ea-status').value = a.status;
+  document.getElementById('ea-notes').value = a.notes || '';
+  document.getElementById('ea-id').value = a.id;
+  document.getElementById('modal-edit-astreinte').classList.add('open');
+}
+
+function updateAstreinte() {
+  const id = parseInt(document.getElementById('ea-id').value);
+  const collabId = parseInt(document.getElementById('ea-collab').value);
+  const debut = document.getElementById('ea-debut').value;
+  const fin = document.getElementById('ea-fin').value;
+  const site = document.getElementById('ea-site').value;
+  const status = document.getElementById('ea-status').value;
+  const notes = document.getElementById('ea-notes').value;
+  if (!collabId || !debut || !fin) { showToast('Veuillez remplir tous les champs'); return; }
+  const idx = astreintes.findIndex(a => a.id === id);
+  if (idx !== -1) astreintes[idx] = { id, collabId, debut, fin, site, status, notes };
+  document.getElementById('modal-edit-astreinte').classList.remove('open');
+  persistAstreintes();
+  renderAstreintes(); renderDashboard(); updateCounts();
+  if (currentPage === 'calendrier') renderCalendar();
+  showToast('✅ Astreinte modifiée avec succès');
+}
+
+// ── COLLABORATEURS ────────────────────────────────────────────────────────
+let collabSearch = '', collabSiteF = '';
+function renderCollabs() {
+  const tbody = document.getElementById('collabs-tbody');
+  let data = [...collaborateurs];
+  if (currentSiteFilter !== 'tous') data = data.filter(c => c.site === currentSiteFilter);
+  if (collabSearch) data = data.filter(c => (`${c.prenom} ${c.nom}`).toLowerCase().includes(collabSearch.toLowerCase()));
+  if (collabSiteF) data = data.filter(c => c.site === collabSiteF);
+
+  tbody.innerHTML = data.length ? data.map(c => {
+    const eq = getEquipe(c.equipe);
+    return `<tr>
+      <td>
+        <div class="user-cell">
+          <div class="avatar" style="background:${avatarColor(c.id)}">${initials(c)}</div>
+          <div><div class="user-name">${c.prenom} ${c.nom}</div><div class="user-email">${c.email}</div></div>
+        </div>
+      </td>
+      <td style="font-size:0.85rem">${c.poste}</td>
+      <td style="color:var(--muted);font-size:0.82rem">${eq ? eq.nom : '—'}</td>
+      <td>${sitePill(c.site)}</td>
+      <td style="font-size:0.82rem;color:var(--muted)">${c.tel}</td>
+      <td>
+        <button class="action-btn" title="Modifier" onclick="editCollab(${c.id})">✏️</button>
+        <button class="action-btn" title="Supprimer" onclick="deleteCollab(${c.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👤</div><p>Aucun collaborateur trouvé</p></div></td></tr>`;
+}
+
+function filterCollabs(v) { collabSearch = v; renderCollabs(); }
+function filterCollabSite(v) { collabSiteF = v; renderCollabs(); }
+
+function editCollab(id) {
+  const c = collaborateurs.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('ec-id').value = c.id;
+  document.getElementById('ec-prenom').value = c.prenom;
+  document.getElementById('ec-nom').value = c.nom;
+  document.getElementById('ec-email').value = c.email;
+  document.getElementById('ec-poste').value = c.poste;
+  document.getElementById('ec-tel').value = c.tel;
+  document.getElementById('ec-site').value = c.site;
+  document.getElementById('ec-equipe').innerHTML = equipes.map(e => `<option value="${e.id}">${e.nom}</option>`).join('');
+  document.getElementById('ec-equipe').value = c.equipe;
+  document.getElementById('modal-edit-collab').classList.add('open');
+}
+
+function updateCollab() {
+  const id = parseInt(document.getElementById('ec-id').value);
+  const prenom = document.getElementById('ec-prenom').value.trim();
+  const nom = document.getElementById('ec-nom').value.trim();
+  const email = document.getElementById('ec-email').value.trim();
+  const poste = document.getElementById('ec-poste').value.trim();
+  const tel = document.getElementById('ec-tel').value.trim();
+  const site = document.getElementById('ec-site').value;
+  const equipe = parseInt(document.getElementById('ec-equipe').value);
+  if (!prenom || !nom) { showToast('Prénom et nom requis'); return; }
+  const idx = collaborateurs.findIndex(c => c.id === id);
+  if (idx !== -1) collaborateurs[idx] = { id, prenom, nom, email, poste, tel, site, equipe };
+  document.getElementById('modal-edit-collab').classList.remove('open');
+  persistCollabs();
+  renderCollabs(); updateCounts(); renderDashboard();
+  showToast('✅ Collaborateur modifié');
+}
+
+function deleteCollab(id) {
+  collaborateurs = collaborateurs.filter(c => c.id !== id);
+  persistCollabs();
+  renderCollabs(); updateCounts(); showToast('🗑 Collaborateur supprimé');
+}
+
+// ── EQUIPES ───────────────────────────────────────────────────────────────
+function renderEquipes() {
+  const grid = document.getElementById('teams-grid');
+  let data = [...equipes];
+  if (currentSiteFilter !== 'tous') data = data.filter(e => e.site === currentSiteFilter);
+
+  grid.innerHTML = data.length ? data.map(eq => {
+    const members = collaborateurs.filter(c => c.equipe === eq.id);
+    const resp = getCollab(eq.responsable);
+    return `<div class="team-card">
+      <div class="team-name">${eq.nom}</div>
+      <div class="team-site">
+        <span class="site-dot" style="background:${SITE_COLORS[eq.site]}"></span>
+        ${SITE_LABELS[eq.site]}
+      </div>
+      <div class="team-members">
+        ${members.slice(0,4).map(c => `
+          <div class="member-row">
+            <div class="avatar" style="background:${avatarColor(c.id)};width:26px;height:26px;font-size:0.65rem">${initials(c)}</div>
+            <span style="font-size:0.84rem">${c.prenom} ${c.nom}</span>
+            ${c.id === eq.responsable ? '<span class="member-role">Chef</span>' : '<span class="member-role">Membre</span>'}
+          </div>`).join('')}
+        ${members.length > 4 ? `<div style="font-size:0.78rem;color:var(--muted);padding-left:34px">+${members.length-4} autres</div>` : ''}
+        ${members.length === 0 ? `<div style="font-size:0.8rem;color:var(--muted)">Aucun membre</div>` : ''}
+      </div>
+      <div class="team-footer">
+        <span>${members.length} membre(s)</span>
+        <div style="display:flex;gap:4px">
+          <button class="action-btn" title="Modifier" onclick="editEquipe(${eq.id})">✏️</button>
+          <button class="action-btn" title="Supprimer" onclick="deleteEquipe(${eq.id})">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') : `<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">👥</div><p>Aucune équipe trouvée</p></div></div>`;
+}
+
+function editEquipe(id) {
+  const eq = equipes.find(x => x.id === id);
+  if (!eq) return;
+  document.getElementById('ee-id').value = eq.id;
+  document.getElementById('ee-nom').value = eq.nom;
+  document.getElementById('ee-site').value = eq.site;
+  document.getElementById('ee-responsable').innerHTML = '<option value="">— Aucun —</option>' + collaborateurs.map(c => `<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+  document.getElementById('ee-responsable').value = eq.responsable || '';
+  document.getElementById('modal-edit-equipe').classList.add('open');
+}
+
+function updateEquipe() {
+  const id = parseInt(document.getElementById('ee-id').value);
+  const nom = document.getElementById('ee-nom').value.trim();
+  const site = document.getElementById('ee-site').value;
+  const resp = parseInt(document.getElementById('ee-responsable').value) || null;
+  if (!nom) { showToast("Nom de l\'équipe requis"); return; }
+  const idx = equipes.findIndex(e => e.id === id);
+  if (idx !== -1) equipes[idx] = { id, nom, site, responsable: resp };
+  document.getElementById('modal-edit-equipe').classList.remove('open');
+  persistEquipes();
+  renderEquipes(); showToast('✅ Équipe modifiée');
+}
+
+function deleteEquipe(id) {
+  equipes = equipes.filter(e => e.id !== id);
+  persistEquipes();
+  renderEquipes(); showToast('🗑 Équipe supprimée');
+}
+
+// ── CALENDAR ─────────────────────────────────────────────────────────────
+function renderCalendar() {
+  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const DAYS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const y = calDate.getFullYear(), m = calDate.getMonth();
+  document.getElementById('cal-month-label').textContent = `${MONTHS[m]} ${y}`;
+
+  const header = document.getElementById('cal-days-header');
+  header.innerHTML = DAYS.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+
+  const firstDay = new Date(y, m, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Monday-based
+
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const daysInPrev = new Date(y, m, 0).getDate();
+  const todayStr = today();
+
+  // Build list of all days to render
+  const allDays = [];
+  for (let i = startDow - 1; i >= 0; i--) allDays.push({ day: daysInPrev - i, cur: false, dateStr: null });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    allDays.push({ day: d, cur: true, dateStr });
+  }
+  const total = startDow + daysInMonth;
+  const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let d = 1; d <= remaining; d++) allDays.push({ day: d, cur: false, dateStr: null });
+
+  // Filter astreintes
+  let visibleA = [...astreintes];
+  if (currentSiteFilter !== 'tous') visibleA = visibleA.filter(a => a.site === currentSiteFilter);
+
+  // Assign each astreinte a row (lane) to avoid overlaps
+  const lanes = []; // lanes[i] = end date of last astreinte in lane i
+  const aLane = {};
+  visibleA.forEach(a => {
+    let placed = false;
+    for (let li = 0; li < lanes.length; li++) {
+      if (lanes[li] < a.debut) { lanes[li] = a.fin; aLane[a.id] = li; placed = true; break; }
+    }
+    if (!placed) { aLane[a.id] = lanes.length; lanes.push(a.fin); }
+  });
+
+  // For each day cell, determine which astreintes are active and their segment type
+  function getSegments(dateStr) {
+    if (!dateStr) return [];
+    return visibleA
+      .filter(a => a.debut <= dateStr && a.fin >= dateStr)
+      .map(a => ({
+        a,
+        isStart: a.debut === dateStr,
+        isEnd: a.fin === dateStr,
+        isSingle: a.debut === dateStr && a.fin === dateStr,
+        lane: aLane[a.id]
+      }));
+  }
+
+  const cells = allDays.map(({ day, cur, dateStr }) => {
+    if (!cur) return `<div class="cal-day other-month"><div class="day-num">${day}</div></div>`;
+
+    const isToday = dateStr === todayStr;
+    const segs = getSegments(dateStr);
+
+    // Build lane rows (up to 4)
+    const maxLane = segs.length ? Math.max(...segs.map(s => s.lane)) : -1;
+    let laneHtml = '';
+    for (let li = 0; li <= maxLane; li++) {
+      const seg = segs.find(s => s.lane === li);
+      if (!seg) {
+        laneHtml += `<div class="cal-lane-empty"></div>`;
+      } else {
+        const c = getCollab(seg.a.collabId);
+        if (!c) { laneHtml += `<div class="cal-lane-empty"></div>`; continue; }
+        const color = SITE_COLORS[seg.a.site];
+        const rLeft = seg.isStart || seg.isSingle ? '4px' : '0';
+        const rRight = seg.isEnd || seg.isSingle ? '4px' : '0';
+        const mLeft = seg.isStart || seg.isSingle ? '3px' : '0';
+        const mRight = seg.isEnd || seg.isSingle ? '3px' : '0';
+        const showName = seg.isStart || seg.isSingle;
+        laneHtml += `<div class="cal-lane-bar" style="
+          background:${color}28;
+          border-top:2px solid ${color};
+          border-bottom:2px solid ${color};
+          border-left:${seg.isStart || seg.isSingle ? '2px solid '+color : 'none'};
+          border-right:${seg.isEnd || seg.isSingle ? '2px solid '+color : 'none'};
+          border-radius:${rLeft} ${rRight} ${rRight} ${rLeft};
+          margin-left:${mLeft};
+          margin-right:${mRight};
+          color:${color};
+        " title="${c.prenom} ${c.nom} — ${SITE_LABELS[seg.a.site]}">${showName ? `<span class="cal-bar-name">${c.prenom} ${c.nom}</span>` : ''}</div>`;
+      }
+    }
+    const extra = '';
+
+    return `<div class="cal-day${isToday ? ' today' : ''}">
+      <div class="day-num">${day}</div>
+      ${laneHtml}${extra}
+    </div>`;
+  }).join('');
+
+  document.getElementById('cal-grid').innerHTML = cells;
+}
+
+function changeMonth(dir) { calDate.setMonth(calDate.getMonth() + dir); renderCalendar(); }
+function goToday() { calDate = new Date(); renderCalendar(); }
+
+// ── PILLS ─────────────────────────────────────────────────────────────────
+function sitePill(site) {
+  return `<span class="site-pill" style="background:${SITE_COLORS[site]}22;color:${SITE_COLORS[site]}">
+    <span style="width:6px;height:6px;border-radius:50%;background:${SITE_COLORS[site]};display:inline-block"></span>
+    ${SITE_LABELS[site]}
+  </span>`;
+}
+
+function statusPill(s) {
+  const map = { active: ['status-active','Actif'], standby: ['status-standby','En attente'], off: ['status-off','Terminé'] };
+  const [cls, label] = map[s] || ['status-off','—'];
+  return `<span class="status-pill ${cls}">${label}</span>`;
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────
+function openModal(name) {
+  if (name === 'add-astreinte') {
+    const sel = document.getElementById('a-collab');
+    sel.innerHTML = collaborateurs.map(c => `<option value="${c.id}">${c.prenom} ${c.nom} (${SITE_LABELS[c.site]})</option>`).join('');
+    const d = new Date(); const t = today();
+    document.getElementById('a-debut').value = t;
+    document.getElementById('a-fin').value = t;
+  }
+  if (name === 'add-collab') {
+    document.getElementById('c-equipe').innerHTML = equipes.map(e => `<option value="${e.id}">${e.nom}</option>`).join('');
+  }
+  if (name === 'add-equipe') {
+    document.getElementById('e-responsable').innerHTML = `<option value="">— Aucun —</option>` + collaborateurs.map(c => `<option value="${c.id}">${c.prenom} ${c.nom}</option>`).join('');
+  }
+  document.getElementById('modal-' + name).classList.add('open');
+}
+
+function closeModal(name) {
+  document.getElementById('modal-' + name).classList.remove('open');
+}
+
+// close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ── SAVE ──────────────────────────────────────────────────────────────────
+async function saveAstreinte() {
+  const collabId = parseInt(document.getElementById('a-collab').value);
+  const debut = document.getElementById('a-debut').value;
+  const fin = document.getElementById('a-fin').value;
+  const site = document.getElementById('a-site').value;
+  const status = document.getElementById('a-status').value;
+  const notes = document.getElementById('a-notes').value;
+  if (!collabId || !debut || !fin) { showToast('Veuillez remplir tous les champs'); return; }
+  const newId = Math.max(0, ...astreintes.map(a => a.id)) + 1;
+  const newA = { id:newId, collabId, debut, fin, site, status, notes };
+  astreintes.push(newA);
+  // Save to SharePoint
+  const spResult = await saveToSharePoint(appConfig.sp.listAstreintes, {
+    CollaborateurId: collabId, Site: site, DateDebut: debut, DateFin: fin, Statut: status, Notes: notes
+  });
+  if (spResult) newA.spId = spResult.Id;
+  // Save to localStorage
+  if (appConfig.mode === 'local') localStorage.setItem('oncall_astreintes', JSON.stringify(astreintes));
+  closeModal('add-astreinte');
+  renderAstreintes(); renderDashboard(); updateCounts();
+  if (currentPage === 'calendrier') renderCalendar();
+  persistAstreintes();
+  showToast('✅ Astreinte ajoutée avec succès');
+  await sendEmailNotification(newA);
+}
+
+function saveCollab() {
+  const prenom = document.getElementById('c-prenom').value.trim();
+  const nom = document.getElementById('c-nom').value.trim();
+  const email = document.getElementById('c-email').value.trim();
+  const poste = document.getElementById('c-poste').value.trim();
+  const tel = document.getElementById('c-tel').value.trim();
+  const site = document.getElementById('c-site').value;
+  const equipe = parseInt(document.getElementById('c-equipe').value);
+  if (!prenom || !nom) { showToast('Prénom et nom requis'); return; }
+  const newId = Math.max(0, ...collaborateurs.map(c => c.id)) + 1;
+  collaborateurs.push({ id:newId, prenom, nom, email, poste, tel, site, equipe });
+  closeModal('add-collab');
+  persistCollabs();
+  renderCollabs(); updateCounts(); renderDashboard();
+  showToast('✅ Collaborateur ajouté');
+}
+
+function saveEquipe() {
+  const nom = document.getElementById('e-nom').value.trim();
+  const site = document.getElementById('e-site').value;
+  const resp = parseInt(document.getElementById('e-responsable').value) || null;
+  if (!nom) { showToast('Nom de l\'équipe requis'); return; }
+  const newId = Math.max(0, ...equipes.map(e => e.id)) + 1;
+  equipes.push({ id:newId, nom, site, responsable: resp });
+  closeModal('add-equipe');
+  persistEquipes();
+  renderEquipes(); showToast('✅ Équipe créée');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── SORT ──────────────────────────────────────────────────────────────────
+let sortKey = '', sortAsc = true;
+function sortTable(key) {
+  if (sortKey === key) sortAsc = !sortAsc; else { sortKey = key; sortAsc = true; }
+  astreintes.sort((a, b) => {
+    let va, vb;
+    if (key === 'nom') { const ca = getCollab(a.collabId), cb = getCollab(b.collabId); va = ca ? ca.nom : ''; vb = cb ? cb.nom : ''; }
+    else if (key === 'equipe') { const ca = getCollab(a.collabId), cb = getCollab(b.collabId); const ea = ca ? getEquipe(ca.equipe) : null, eb = cb ? getEquipe(cb.equipe) : null; va = ea ? ea.nom : ''; vb = eb ? eb.nom : ''; }
+    else { va = a[key] || ''; vb = b[key] || ''; }
+    return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  renderAstreintes();
+}
+
+// ── CONFIGURATION & SHAREPOINT ──────────────────────────────────────────────
+
+const DEFAULT_EMAIL_TEMPLATE = `Bonjour {PRENOM} {NOM},
+
+Nous vous informons qu'une astreinte a été planifiée pour vous :
+
+  📅 Date de début  : {DATE_DEBUT}
+  📅 Date de fin    : {DATE_FIN}
+  📍 Site           : {SITE}
+  📋 Statut         : {STATUT}
+
+En cas de question, veuillez contacter votre responsable.
+
+Cordialement,
+La Direction des Opérations`;
+
+let appConfig = {
+  mode: 'local',
+  sp: { url: '', clientId: '', listCollab: 'Collaborateurs', listEquipes: 'Equipes', listAstreintes: 'Astreintes' },
+  pa: { webhook: '', from: '', subject: '[Astreinte] Notification de planification', body: DEFAULT_EMAIL_TEMPLATE }
+};
+
+function loadConfig() {
+  const saved = localStorage.getItem('oncall_config');
+  if (saved) { try { appConfig = JSON.parse(saved); } catch(e) {} }
+  document.getElementById('cfg-sp-url').value = appConfig.sp.url || '';
+  document.getElementById('cfg-sp-clientid').value = appConfig.sp.clientId || '';
+  document.getElementById('cfg-list-collab').value = appConfig.sp.listCollab || 'Collaborateurs';
+  document.getElementById('cfg-list-equipes').value = appConfig.sp.listEquipes || 'Equipes';
+  document.getElementById('cfg-list-astreintes').value = appConfig.sp.listAstreintes || 'Astreintes';
+  document.getElementById('cfg-pa-webhook').value = appConfig.pa.webhook || '';
+  document.getElementById('cfg-pa-from').value = appConfig.pa.from || '';
+  document.getElementById('cfg-pa-subject').value = appConfig.pa.subject || '';
+  document.getElementById('cfg-pa-body').value = appConfig.pa.body || DEFAULT_EMAIL_TEMPLATE;
+  setMode(appConfig.mode || 'demo', false);
+}
+
+function saveConfig() {
+  appConfig.sp.url = document.getElementById('cfg-sp-url').value.trim();
+  appConfig.sp.clientId = document.getElementById('cfg-sp-clientid').value.trim();
+  appConfig.sp.listCollab = document.getElementById('cfg-list-collab').value.trim();
+  appConfig.sp.listEquipes = document.getElementById('cfg-list-equipes').value.trim();
+  appConfig.sp.listAstreintes = document.getElementById('cfg-list-astreintes').value.trim();
+  appConfig.pa.webhook = document.getElementById('cfg-pa-webhook').value.trim();
+  appConfig.pa.from = document.getElementById('cfg-pa-from').value.trim();
+  appConfig.pa.subject = document.getElementById('cfg-pa-subject').value.trim();
+  appConfig.pa.body = document.getElementById('cfg-pa-body').value;
+  localStorage.setItem('oncall_config', JSON.stringify(appConfig));
+  showToast('✅ Configuration sauvegardée');
+  updateConfigBadges();
+}
+
+function updateConfigBadges() {
+  const spOk = appConfig.sp.url && appConfig.sp.clientId;
+  const paOk = appConfig.pa.webhook;
+  document.getElementById('sp-status').className = 'conn-badge ' + (spOk ? 'badge-connected' : 'badge-disconnected');
+  document.getElementById('sp-status').textContent = spOk ? '✓ Configuré' : 'Non connecté';
+  document.getElementById('pa-status').className = 'conn-badge ' + (paOk ? 'badge-connected' : 'badge-disconnected');
+  document.getElementById('pa-status').textContent = paOk ? '✓ Configuré' : 'Non connecté';
+}
+
+// ── LOCALSTORAGE PERSISTENCE ──────────────────────────────────────────────────
+function persistAll() {
+  if (appConfig.mode !== 'local') return;
+  try {
+    localStorage.setItem('oncall_collabs',     JSON.stringify(collaborateurs));
+    localStorage.setItem('oncall_equipes',     JSON.stringify(equipes));
+    localStorage.setItem('oncall_astreintes',  JSON.stringify(astreintes));
+  } catch(e) { showToast('⚠️ Stockage local plein ou indisponible'); }
+}
+
+function persistCollabs()     { if (appConfig.mode==='local') localStorage.setItem('oncall_collabs',    JSON.stringify(collaborateurs)); }
+function persistEquipes()     { if (appConfig.mode==='local') localStorage.setItem('oncall_equipes',    JSON.stringify(equipes)); }
+function persistAstreintes()  { if (appConfig.mode==='local') localStorage.setItem('oncall_astreintes', JSON.stringify(astreintes)); }
+
+function exportData() {
+  const data = { collaborateurs, equipes, astreintes, sites, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'oncall-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  showToast('💾 Export JSON téléchargé');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.collaborateurs) collaborateurs = data.collaborateurs;
+      if (data.equipes)        equipes        = data.equipes;
+      if (data.astreintes)     astreintes     = data.astreintes;
+      if (data.sites)          sites          = data.sites;
+      persistAll(); saveSites();
+      renderSidebarSites(); renderDashboard(); updateCounts();
+      showToast('✅ Import réussi — données restaurées');
+    } catch(err) { showToast('❌ Fichier invalide'); }
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  if (!confirm('⚠️ Supprimer TOUTES les données locales ? Cette action est irréversible.')) return;
+  localStorage.removeItem('oncall_collabs');
+  localStorage.removeItem('oncall_equipes');
+  localStorage.removeItem('oncall_astreintes');
+  localStorage.removeItem('oncall_sites');
+  collaborateurs = []; equipes = []; astreintes = []; sites = [];
+  renderSidebarSites(); renderDashboard(); updateCounts();
+  showToast('🗑 Toutes les données ont été effacées');
+}
+
+function getStorageUsage() {
+  let total = 0;
+  ['oncall_collabs','oncall_equipes','oncall_astreintes','oncall_sites','oncall_config'].forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v) total += v.length;
+  });
+  return (total / 1024).toFixed(1);
+}
+
+function setMode(mode, save=true) {
+  appConfig.mode = mode;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  const el = document.getElementById('mode-' + mode);
+  if (el) el.classList.add('active');
+  if (save) localStorage.setItem('oncall_config', JSON.stringify(appConfig));
+}
+
+function resetEmailTemplate() {
+  document.getElementById('cfg-pa-body').value = DEFAULT_EMAIL_TEMPLATE;
+}
+
+function showPAGuide() {
+  const g = document.getElementById('pa-guide');
+  g.style.display = g.style.display === 'none' ? 'block' : 'none';
+}
+
+async function testSharePoint() {
+  const url = document.getElementById('cfg-sp-url').value.trim();
+  if (!url) { showToast('⚠️ Entrez l\'URL SharePoint d\'abord'); return; }
+  showToast('🔄 Test de connexion SharePoint...');
+  try {
+    const res = await fetch(`${url}/_api/web/title`, { headers: { Accept: 'application/json;odata=verbose' }, mode: 'cors' });
+    if (res.ok) {
+      document.getElementById('sp-status').className = 'conn-badge badge-connected';
+      document.getElementById('sp-status').textContent = '✓ Connecté';
+      showToast('✅ SharePoint connecté avec succès !');
+    } else { throw new Error('HTTP ' + res.status); }
+  } catch(e) {
+    document.getElementById('sp-status').className = 'conn-badge badge-error';
+    document.getElementById('sp-status').textContent = '✗ Erreur';
+    showToast('❌ Connexion échouée — vérifiez l\'URL et les permissions CORS');
+  }
+}
+
+async function testWebhook() {
+  const webhook = document.getElementById('cfg-pa-webhook').value.trim();
+  if (!webhook) { showToast('⚠️ Entrez l\'URL du webhook d\'abord'); return; }
+  showToast('🔄 Test du webhook Power Automate...');
+  try {
+    await fetch(webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        emailTo: 'test@test.ma', emailCC: '', subject: '[TEST] Webhook OK',
+        body: 'Ceci est un test de connexion depuis OnCall Manager.',
+        prenom: 'Test', nom: 'Utilisateur', site: 'Rabat',
+        dateDebut: '01/06/2025', dateFin: '07/06/2025', statut: 'Actif'
+      }),
+      mode: 'no-cors'
+    });
+    document.getElementById('pa-status').className = 'conn-badge badge-connected';
+    document.getElementById('pa-status').textContent = '✓ Connecté';
+    showToast('✅ Webhook Power Automate déclenché !');
+  } catch(e) {
+    showToast('❌ Erreur webhook — vérifiez l\'URL');
+  }
+}
+
+// ── SHAREPOINT API ───────────────────────────────────────────────────────────
+async function spGetToken() {
+  // Uses implicit flow / already logged-in session (app must be registered in Azure AD)
+  return null; // Placeholder — real token via MSAL.js
+}
+
+async function spRequest(method, path, body=null) {
+  const baseUrl = appConfig.sp.url;
+  if (!baseUrl) return null;
+  const headers = { 'Accept': 'application/json;odata=nometadata', 'Content-Type': 'application/json' };
+  const opts = { method, headers, credentials: 'include' };
+  if (body) opts.body = JSON.stringify({ __metadata: { type: 'SP.Data.ListItemEntityTypeFullName' }, ...body });
+  try {
+    const res = await fetch(`${baseUrl}/_api/web/lists/getbytitle`, { ...opts });
+    return res.ok ? await res.json() : null;
+  } catch { return null; }
+}
+
+async function saveToSharePoint(listName, data) {
+  if (appConfig.mode !== 'sharepoint' || !appConfig.sp.url) return null;
+  const url = `${appConfig.sp.url}/_api/web/lists/getbytitle('${listName}')/items`;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json;odata=nometadata', 'Content-Type': 'application/json;odata=nometadata' },
+      credentials: 'include',
+      body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch(e) { console.warn('SharePoint save failed:', e); }
+  return null;
+}
+
+async function updateInSharePoint(listName, spId, data) {
+  if (appConfig.mode !== 'sharepoint' || !appConfig.sp.url) return;
+  const url = `${appConfig.sp.url}/_api/web/lists/getbytitle('${listName}')/items(${spId})`;
+  try {
+    await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/json;odata=nometadata',
+        'Content-Type': 'application/json;odata=nometadata',
+        'X-HTTP-Method': 'MERGE',
+        'IF-MATCH': '*'
+      },
+      credentials: 'include',
+      body: JSON.stringify(data)
+    });
+  } catch(e) { console.warn('SharePoint update failed:', e); }
+}
+
+async function deleteFromSharePoint(listName, spId) {
+  if (appConfig.mode !== 'sharepoint' || !appConfig.sp.url || !spId) return;
+  const url = `${appConfig.sp.url}/_api/web/lists/getbytitle('${listName}')/items(${spId})`;
+  try {
+    await fetch(url, {
+      method: 'DELETE',
+      headers: { 'IF-MATCH': '*', 'X-HTTP-Method': 'DELETE' },
+      credentials: 'include'
+    });
+  } catch(e) { console.warn('SharePoint delete failed:', e); }
+}
+
+async function loadFromSharePoint() {
+  if (appConfig.mode !== 'sharepoint' || !appConfig.sp.url) return false;
+  showToast('🔄 Chargement depuis SharePoint...');
+  try {
+    const [rC, rE, rA] = await Promise.all([
+      fetch(`${appConfig.sp.url}/_api/web/lists/getbytitle('${appConfig.sp.listCollab}')/items?$top=500`, { headers: { Accept: 'application/json;odata=nometadata' }, credentials: 'include' }),
+      fetch(`${appConfig.sp.url}/_api/web/lists/getbytitle('${appConfig.sp.listEquipes}')/items?$top=500`, { headers: { Accept: 'application/json;odata=nometadata' }, credentials: 'include' }),
+      fetch(`${appConfig.sp.url}/_api/web/lists/getbytitle('${appConfig.sp.listAstreintes}')/items?$top=500`, { headers: { Accept: 'application/json;odata=nometadata' }, credentials: 'include' })
+    ]);
+    if (rC.ok && rE.ok && rA.ok) {
+      const [dC, dE, dA] = await Promise.all([rC.json(), rE.json(), rA.json()]);
+      collaborateurs = dC.value.map(i => ({ id: i.Id, spId: i.Id, prenom: i.Prenom||'', nom: i.Nom||'', email: i.Email||'', poste: i.Poste||'', tel: i.Tel||'', site: (i.Site||'rabat').toLowerCase(), equipe: parseInt(i.EquipeId)||0 }));
+      equipes = dE.value.map(i => ({ id: i.Id, spId: i.Id, nom: i.NomEquipe||i.Title||'', site: (i.Site||'rabat').toLowerCase(), responsable: parseInt(i.ResponsableId)||null }));
+      astreintes = dA.value.map(i => ({ id: i.Id, spId: i.Id, collabId: parseInt(i.CollaborateurId)||0, site: (i.Site||'rabat').toLowerCase(), debut: i.DateDebut||'', fin: i.DateFin||'', status: i.Statut||'active', notes: i.Notes||'' }));
+      showToast('✅ Données chargées depuis SharePoint');
+      renderDashboard(); updateCounts();
+      return true;
+    }
+  } catch(e) { console.warn('SP load failed:', e); }
+  showToast('⚠️ Impossible de charger depuis SharePoint — mode démo actif');
+  return false;
+}
+
+// ── POWER AUTOMATE EMAIL ─────────────────────────────────────────────────────
+async function sendEmailNotification(astreinte) {
+  if (!appConfig.pa.webhook) return;
+  const c = getCollab(astreinte.collabId);
+  if (!c) return;
+  const eq = getEquipe(c.equipe);
+  const resp = eq ? getCollab(eq.responsable) : null;
+  const body = (appConfig.pa.body || DEFAULT_EMAIL_TEMPLATE)
+    .replace(/{PRENOM}/g, c.prenom)
+    .replace(/{NOM}/g, c.nom)
+    .replace(/{SITE}/g, SITE_LABELS[astreinte.site] || astreinte.site)
+    .replace(/{DATE_DEBUT}/g, fmtDate(astreinte.debut))
+    .replace(/{DATE_FIN}/g, fmtDate(astreinte.fin))
+    .replace(/{STATUT}/g, astreinte.status === 'active' ? 'Actif' : astreinte.status === 'standby' ? 'En attente' : 'Terminé')
+    .replace(/{RESPONSABLE}/g, resp ? `${resp.prenom} ${resp.nom}` : '—');
+  const payload = {
+    emailTo: c.email,
+    emailCC: resp ? resp.email : '',
+    subject: appConfig.pa.subject || '[Astreinte] Notification de planification',
+    body,
+    prenom: c.prenom,
+    nom: c.nom,
+    site: SITE_LABELS[astreinte.site] || astreinte.site,
+    dateDebut: fmtDate(astreinte.debut),
+    dateFin: fmtDate(astreinte.fin),
+    statut: astreinte.status
+  };
+  try {
+    await fetch(appConfig.pa.webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      mode: 'no-cors'
+    });
+    showToast(`📧 Email envoyé à ${c.prenom} ${c.nom}${resp ? ' (CC: ' + resp.prenom + ')' : ''}`);
+  } catch(e) {
+    showToast('⚠️ Email non envoyé — vérifiez le webhook');
+  }
+}
+
+// ── SITES MANAGEMENT ─────────────────────────────────────────────────────────
+
+function renderSidebarSites() {
+  const list = document.getElementById('sidebar-sites-list');
+  // Rebuild — keep "tous" tag first
+  list.innerHTML = `<div class="site-tag active" id="site-tag-tous" onclick="filterSite('tous',this)">
+    <span class="site-dot" style="background:var(--muted)"></span>
+    Tous les sites
+    <span class="site-count" id="count-tous">-</span>
+  </div>` + sites.map(s => `
+    <div class="site-tag" id="site-tag-${s.id}" onclick="filterSite('${s.id}',this)">
+      <span class="site-dot" style="background:${s.color}"></span>
+      ${s.label}
+      <span class="site-count" id="count-${s.id}">-</span>
+      <button onclick="event.stopPropagation();deleteSite('${s.id}')" title="Supprimer"
+        style="margin-left:2px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.7rem;padding:0 2px;opacity:0;transition:opacity 0.2s"
+        onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0">✕</button>
+    </div>`).join('');
+  updateCounts();
+  refreshSiteSelects();
+}
+
+function refreshSiteSelects() {
+  const opts = sites.map(s => `<option value="${s.id}">${s.label}</option>`).join('');
+  ['a-site','ea-site','c-site','ec-site','e-site','ee-site','ns-site',
+   'site-filter-astreintes','cfg-list-sites'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+  // also refresh filter selects that have blank option first
+  ['site-filter-astreintes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<option value="">Tous les sites</option>' + opts;
+  });
+}
+
+function saveSite() {
+  let label = document.getElementById('ns-label').value.trim();
+  let id    = document.getElementById('ns-id').value.trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+  let color = document.getElementById('ns-color').value;
+  if (!label) { showToast('⚠️ Entrez le nom du site'); return; }
+  if (!id) { id = label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,''); }
+  if (sites.find(s => s.id === id)) { showToast('⚠️ Ce site existe déjà'); return; }
+  sites.push({ id, label, color });
+  saveSites();
+  closeModal('add-site');
+  document.getElementById('ns-label').value = '';
+  document.getElementById('ns-id').value = '';
+  document.getElementById('ns-color').value = '#4f7ef8';
+  renderSidebarSites();
+  if (document.getElementById('stat-sites')) document.getElementById('stat-sites').textContent = sites.length;
+  showToast(`✅ Site "${label}" ajouté`);
+}
+
+function deleteSite(id) {
+  const inUse = astreintes.some(a => a.site === id) || collaborateurs.some(c => c.site === id);
+  if (inUse) { showToast('⚠️ Site utilisé par des astreintes ou collaborateurs — impossible de supprimer'); return; }
+  const s = sites.find(x => x.id === id);
+  sites = sites.filter(x => x.id !== id);
+  saveSites();
+  if (currentSiteFilter === id) { currentSiteFilter = 'tous'; }
+  renderSidebarSites();
+  if (document.getElementById('stat-sites')) document.getElementById('stat-sites').textContent = sites.length;
+  showToast(`🗑 Site "${s ? s.label : id}" supprimé`);
+}
+
+function setColorPreset(color) {
+  document.getElementById('ns-color').value = color;
+  document.getElementById('ns-color-preview').style.background = color;
+  document.querySelectorAll('.color-preset').forEach(el => {
+    el.classList.toggle('selected', el.style.background === color || el.style.backgroundColor === color);
+  });
+}
+
+// Sync color picker → preview
+document.addEventListener('DOMContentLoaded', () => {
+  const cp = document.getElementById('ns-color');
+  const pv = document.getElementById('ns-color-preview');
+  if (cp && pv) cp.addEventListener('input', () => pv.style.background = cp.value);
+  // Auto-fill slug from label
+  const lbl = document.getElementById('ns-label');
+  const slug = document.getElementById('ns-id');
+  if (lbl && slug) lbl.addEventListener('input', () => {
+    slug.value = lbl.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+  });
+});
+
+
+
+// ── THEME TOGGLE ──────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-theme');
+  localStorage.setItem('oncall_theme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-toggle-btn').textContent = isLight ? '☀️' : '🌙';
+  showToast(isLight ? '☀️ Thème blanc activé' : '🌙 Thème sombre activé');
+}
+
+function applyStoredTheme() {
+  const stored = localStorage.getItem('oncall_theme');
+  if (stored === 'light') {
+    document.body.classList.add('light-theme');
+    const btn = document.getElementById('theme-toggle-btn');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+function refreshLocalStorageStats() {
+  const lc = document.getElementById('ls-nb-collabs');
+  const la = document.getElementById('ls-nb-astreintes');
+  const ls = document.getElementById('ls-size');
+  if (lc) lc.textContent = collaborateurs.length;
+  if (la) la.textContent = astreintes.length;
+  if (ls) ls.textContent = getStorageUsage();
+}
+
+function init() {
+  applyStoredTheme();
+  const d = new Date();
+  document.getElementById('current-date').textContent = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  loadConfig();
+  updateConfigBadges();
+  if (document.getElementById('stat-sites')) document.getElementById('stat-sites').textContent = sites.length;
+  // Load from localStorage (mode local par défaut)
+  try {
+    const sc = localStorage.getItem('oncall_collabs');     if (sc) collaborateurs = JSON.parse(sc);
+    const se = localStorage.getItem('oncall_equipes');     if (se) equipes        = JSON.parse(se);
+    const sa = localStorage.getItem('oncall_astreintes');  if (sa) astreintes     = JSON.parse(sa);
+  } catch(e) { console.warn('Erreur lecture localStorage:', e); }
+  if (appConfig.mode === 'sharepoint') loadFromSharePoint();
+  renderSidebarSites();
+  renderDashboard();
+  // Refresh LS stats when config page is opened
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.addEventListener('click', () => setTimeout(refreshLocalStorageStats, 100));
+  });
+  refreshLocalStorageStats();
+  // Notify user that local mode is active
+  if (appConfig.mode === 'local') {
+    setTimeout(() => showToast('💾 Mode LocalStorage actif — données sauvegardées automatiquement'), 600);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
