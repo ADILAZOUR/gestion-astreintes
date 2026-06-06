@@ -879,6 +879,139 @@
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ══════════════════════════════════════════════
+     RESPONSIVE DESIGN
+  ══════════════════════════════════════════════ */
+
+  /* Hamburger button — hidden on desktop */
+  .hamburger {
+    display: none;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+  .hamburger span {
+    display: block;
+    width: 18px; height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: all 0.25s;
+  }
+  .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Sidebar overlay for mobile */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 89;
+    backdrop-filter: blur(2px);
+  }
+  .sidebar-overlay.visible { display: block; }
+
+  /* ── Tablet (≤ 1024px) ── */
+  @media (max-width: 1024px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .teams-grid { grid-template-columns: repeat(2, 1fr); }
+    .app { grid-template-columns: 200px 1fr; }
+    aside { padding: 1.25rem 0.75rem; }
+  }
+
+  /* ── Mobile (≤ 768px) ── */
+  @media (max-width: 768px) {
+
+    /* Header */
+    header { padding: 0 1rem; height: 58px; }
+    header .logo img { height: 36px; }
+    #current-date { display: none; }
+    .hamburger { display: flex; }
+
+    /* App layout — sidebar slides in */
+    .app { grid-template-columns: 1fr; }
+
+    aside {
+      position: fixed;
+      top: 58px;
+      left: 0;
+      width: 260px;
+      height: calc(100vh - 58px);
+      z-index: 90;
+      transform: translateX(-100%);
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-y: auto;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+    }
+    aside.open { transform: translateX(0); }
+
+    /* Main */
+    main { padding: 1rem; }
+
+    /* Page header stacks */
+    .page-header { flex-direction: column; gap: 0.75rem; align-items: stretch; }
+    .page-header > div:last-child { display: flex; flex-wrap: wrap; gap: 8px; }
+    .page-header .btn { flex: 1; min-width: 130px; text-align: center; }
+    .page-title { font-size: 1.35rem; }
+
+    /* Stats — 2 cols */
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .stat-value { font-size: 1.6rem; }
+
+    /* Tables — horizontal scroll */
+    .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 560px; }
+    .table-toolbar { flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem 1rem; }
+    .search-input { min-width: 100%; }
+    .filter-select { flex: 1; min-width: 120px; }
+
+    /* Calendar */
+    .calendar-wrapper { overflow-x: auto; }
+    .cal-day { min-height: 60px; padding: 4px; }
+    .cal-bar-name { display: none; }
+    .cal-month { font-size: 0.95rem; min-width: 120px; }
+    .calendar-header { padding: 0.75rem 1rem; flex-wrap: wrap; gap: 8px; }
+
+    /* Teams */
+    .teams-grid { grid-template-columns: 1fr; }
+
+    /* Config */
+    .config-card-header { flex-wrap: wrap; gap: 10px; }
+    .conn-badge { margin-left: 0; }
+    div[style*="grid-template-columns:1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    div[style*="grid-template-columns: 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+    div[style*="repeat(3,1fr)"] { grid-template-columns: 1fr !important; }
+
+    /* Modals */
+    .modal { width: calc(100vw - 24px); max-width: calc(100vw - 24px); border-radius: 12px; }
+    .modal-overlay { align-items: flex-end; padding-bottom: 0; }
+    .modal-overlay .modal { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    .form-row { grid-template-columns: 1fr; }
+
+    /* Toast */
+    .toast { left: 1rem; right: 1rem; bottom: 1rem; }
+  }
+
+  /* ── Small mobile (≤ 420px) ── */
+  @media (max-width: 420px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+    .stat-card { padding: 0.85rem; }
+    .stat-value { font-size: 1.4rem; }
+    main { padding: 0.75rem; }
+    .btn { font-size: 0.8rem; padding: 7px 12px; }
+    .page-title { font-size: 1.2rem; }
+  }
+
 </style>
 </head>
 <body>
@@ -890,10 +1023,16 @@
   </div>
   <div class="header-actions">
     <span style="font-size:0.8rem;color:var(--muted)" id="current-date"></span>
+    <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <button class="btn btn-ghost" id="theme-toggle-btn" onclick="toggleTheme()" title="Changer le thème" style="width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;border-radius:8px">🌙</button>
     <button class="btn btn-primary" onclick="openModal('add-astreinte')">+ Nouvelle astreinte</button>
   </div>
 </header>
+
+<!-- Sidebar overlay for mobile -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <!-- APP -->
 <div class="app">
@@ -1001,7 +1140,11 @@
           <div class="page-title">Calendrier</div>
           <div class="page-subtitle">Visualisez les astreintes par période</div>
         </div>
-        <button class="btn btn-primary" onclick="openModal('add-astreinte')">+ Ajouter</button>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-ghost" onclick="exportCalendarMonth()" title="Exporter le planning du mois en cours">📥 Exporter le planning</button>
+          <button class="btn btn-ghost" style="color:var(--success);border-color:var(--success)" onclick="sendPlanningToAll()" title="Envoyer le planning du mois à tous les collaborateurs">📧 Envoyer à tous</button>
+          <button class="btn btn-primary" onclick="openModal('add-astreinte')">+ Ajouter</button>
+        </div>
       </div>
       <div class="calendar-wrapper">
         <div class="calendar-header">
@@ -1247,16 +1390,20 @@
                 <pre class="code-block">{
   "type": "object",
   "properties": {
-    "emailTo":   { "type": "string" },
-    "emailCC":   { "type": "string" },
-    "subject":   { "type": "string" },
-    "body":      { "type": "string" },
-    "prenom":    { "type": "string" },
-    "nom":       { "type": "string" },
-    "site":      { "type": "string" },
-    "dateDebut": { "type": "string" },
-    "dateFin":   { "type": "string" },
-    "statut":    { "type": "string" }
+    "emailTo":      { "type": "string" },
+    "emailCC":      { "type": "string" },
+    "subject":      { "type": "string" },
+    "body":         { "type": "string" },
+    "planningHtml": { "type": "string" },
+    "mois":         { "type": "string" },
+    "nbAstreintes": { "type": "number" },
+    "type":         { "type": "string" },
+    "prenom":       { "type": "string" },
+    "nom":          { "type": "string" },
+    "site":         { "type": "string" },
+    "dateDebut":    { "type": "string" },
+    "dateFin":      { "type": "string" },
+    "statut":       { "type": "string" }
   }
 }</pre>
               </div>
@@ -1707,11 +1854,8 @@
 // Dynamic sites — persisted in localStorage
 let sites = JSON.parse(localStorage.getItem('oncall_sites') || 'null') || [
   { id:'rabat',      label:'Rabat',      color:'#4f7ef8' },
-  { id:'benguerir',  label:'Benguerir',  color:'#7c3aed' },
   { id:'casablanca', label:'Casablanca', color:'#10b981' },
-  { id:'tanger',     label:'Tanger',     color:'#f59e0b' },
-  { id:'marrakech',  label:'Marrakech',  color:'#ef4444' },
-  { id:'agadir',     label:'Agadir',     color:'#06b6d4' }
+  { id:'benguerir',  label:'Benguerir',  color:'#7c3aed' }
 ];
 function getSite(id) { return sites.find(s => s.id === id) || { id, label: id, color: '#6b7594' }; }
 // Compatibility helpers (replaces old SITES / SITE_COLORS / SITE_LABELS)
@@ -1726,7 +1870,6 @@ let equipes = [
   { id: 1, nom: 'Équipe Réseau', site: 'rabat', responsable: 1 },
   { id: 2, nom: 'Équipe Support', site: 'casablanca', responsable: 3 },
   { id: 3, nom: 'Équipe Infra', site: 'benguerir', responsable: 5 },
-  { id: 4, nom: 'Équipe Sécurité', site: 'tanger', responsable: 7 },
 ];
 
 let collaborateurs = [
@@ -1736,18 +1879,13 @@ let collaborateurs = [
   { id:4, prenom:'Nadia', nom:'Hajji', email:'n.hajji@company.ma', poste:'Ingénieure Systèmes', tel:'+212 6 00 44 55 66', site:'casablanca', equipe:2 },
   { id:5, prenom:'Mehdi', nom:'Cherkaoui', email:'m.cherkaoui@company.ma', poste:'Admin Infrastructure', tel:'+212 6 00 55 66 77', site:'benguerir', equipe:3 },
   { id:6, prenom:'Sara', nom:'Ouazzani', email:'s.ouazzani@company.ma', poste:'Technicien Réseau', tel:'+212 6 00 66 77 88', site:'benguerir', equipe:3 },
-  { id:7, prenom:'Omar', nom:'Tazi', email:'o.tazi@company.ma', poste:'Ingénieur Sécurité', tel:'+212 6 00 77 88 99', site:'tanger', equipe:4 },
-  { id:8, prenom:'Laila', nom:'Bouzid', email:'l.bouzid@company.ma', poste:'Analyste SOC', tel:'+212 6 00 88 99 00', site:'marrakech', equipe:4 },
-  { id:9, prenom:'Hassan', nom:'Rachidi', email:'h.rachidi@company.ma', poste:'DevOps', tel:'+212 6 00 99 00 11', site:'agadir', equipe:3 },
 ];
 
 let astreintes = [
   { id:1, collabId:1, site:'rabat', debut:'2025-06-01', fin:'2025-06-07', status:'active', notes:'Semaine 23' },
   { id:2, collabId:3, site:'casablanca', debut:'2025-06-01', fin:'2025-06-07', status:'active', notes:'' },
   { id:3, collabId:5, site:'benguerir', debut:'2025-06-08', fin:'2025-06-14', status:'standby', notes:'' },
-  { id:4, collabId:7, site:'tanger', debut:'2025-06-08', fin:'2025-06-14', status:'standby', notes:'' },
-  { id:5, collabId:2, site:'rabat', debut:'2025-05-25', fin:'2025-05-31', status:'off', notes:'Terminé' },
-  { id:6, collabId:9, site:'agadir', debut:'2025-06-15', fin:'2025-06-21', status:'standby', notes:'' },
+  { id:4, collabId:2, site:'rabat', debut:'2025-05-25', fin:'2025-05-31', status:'off', notes:'Terminé' },
 ];
 
 let calDate = new Date();
@@ -1784,10 +1922,18 @@ function showPage(name, el) {
   if (name === 'equipes') renderEquipes();
   if (name === 'collaborateurs') renderCollabs();
   if (name === 'dashboard') renderDashboard();
+  // Close sidebar on mobile after nav
+  if (window.innerWidth <= 768) closeSidebar();
 }
 
 // ── SITE FILTER ──────────────────────────────────────────────────────────
 function filterSite(site, el) {
+  if (site === 'tous') {
+    // Open the manage-sites modal
+    renderManageSites();
+    document.getElementById('modal-manage-sites').classList.add('open');
+    return;
+  }
   currentSiteFilter = site;
   document.querySelectorAll('.site-tag').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
@@ -1795,6 +1941,89 @@ function filterSite(site, el) {
   if (currentPage === 'equipes') renderEquipes();
   if (currentPage === 'collaborateurs') renderCollabs();
   if (currentPage === 'calendrier') renderCalendar();
+}
+
+function filterSiteOnly(site) {
+  currentSiteFilter = site;
+  document.querySelectorAll('.site-tag').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById('site-tag-' + site);
+  if (el) el.classList.add('active');
+  closeModal('manage-sites');
+  if (currentPage === 'astreintes') renderAstreintes();
+  if (currentPage === 'equipes') renderEquipes();
+  if (currentPage === 'collaborateurs') renderCollabs();
+  if (currentPage === 'calendrier') renderCalendar();
+}
+
+function resetSiteFilter() {
+  currentSiteFilter = 'tous';
+  document.querySelectorAll('.site-tag').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById('site-tag-tous');
+  if (el) el.classList.add('active');
+  closeModal('manage-sites');
+  if (currentPage === 'astreintes') renderAstreintes();
+  if (currentPage === 'equipes') renderEquipes();
+  if (currentPage === 'collaborateurs') renderCollabs();
+  if (currentPage === 'calendrier') renderCalendar();
+}
+
+function renderManageSites() {
+  const list = document.getElementById('manage-sites-list');
+  const totalA = astreintes.filter(a => a.status !== 'off').length;
+
+  let html = `<div onclick="resetSiteFilter()" style="display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
+    onmouseenter="this.style.background='var(--surface2)'" onmouseleave="this.style.background=''">`
+    + `<span style="width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0;display:inline-block"></span>`
+    + `<span style="flex:1;font-size:0.9rem">Tous les sites</span>`
+    + `<span style="font-size:0.78rem;background:var(--surface2);padding:2px 8px;border-radius:20px;color:var(--muted)">${totalA}</span>`
+    + `</div>`;
+
+  html += sites.map(s => {
+    const cnt = astreintes.filter(a => a.site === s.id && a.status !== 'off').length;
+    const inUse = astreintes.some(a => a.site === s.id) || collaborateurs.some(c => c.site === s.id);
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border)">
+      <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0;display:inline-block"></span>
+      <span onclick="filterSiteOnly('${s.id}')" style="flex:1;font-size:0.9rem;cursor:pointer;font-weight:500">${s.label}</span>
+      <span style="font-size:0.78rem;background:var(--surface2);padding:2px 8px;border-radius:20px;color:var(--muted);flex-shrink:0">${cnt}</span>
+      <button onclick="confirmDeleteSiteModal('${s.id}')"
+        title="${inUse ? 'Site utilisé — impossible de supprimer' : 'Supprimer ce site'}"
+        style="flex-shrink:0;background:${inUse ? 'var(--surface2)' : 'rgba(239,68,68,0.12)'};border:none;color:${inUse ? 'var(--muted)' : 'var(--danger)'};cursor:${inUse ? 'not-allowed' : 'pointer'};font-size:11px;font-weight:700;width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;transition:all 0.15s"
+        ${inUse ? 'disabled' : `onmouseenter="this.style.background='rgba(239,68,68,0.28)'" onmouseleave="this.style.background='rgba(239,68,68,0.12)'"`}
+        id="del-btn-${s.id}">&#x2715;</button>
+    </div>`;
+  }).join('');
+
+  list.innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--muted)">Aucun site</div>';
+}
+
+function confirmDeleteSiteModal(id) {
+  const s = sites.find(x => x.id === id);
+  if (!s) return;
+  const inUse = astreintes.some(a => a.site === id) || collaborateurs.some(c => c.site === id);
+  if (inUse) { showToast('⚠️ Site utilisé par des astreintes ou collaborateurs'); return; }
+  const btn = document.getElementById('del-btn-' + id);
+  if (!btn) return;
+  if (btn.dataset.confirming === '1') {
+    deleteSite(id);
+    renderManageSites();
+    return;
+  }
+  btn.dataset.confirming = '1';
+  btn.innerHTML = '?';
+  btn.style.background = 'var(--danger)';
+  btn.style.color = '#fff';
+  btn.style.width = '50px';
+  btn.title = 'Cliquer encore pour confirmer';
+  setTimeout(() => {
+    if (btn && btn.dataset.confirming === '1') {
+      btn.dataset.confirming = '0';
+      btn.innerHTML = '&#x2715;';
+      btn.style.background = 'rgba(239,68,68,0.12)';
+      btn.style.color = 'var(--danger)';
+      btn.style.width = '26px';
+      btn.title = 'Supprimer ce site';
+    }
+  }, 3000);
 }
 
 // ── SITE COUNTS ──────────────────────────────────────────────────────────
@@ -2596,23 +2825,207 @@ async function sendEmailNotification(astreinte) {
   }
 }
 
+// ── EXPORT CALENDAR MONTH ─────────────────────────────────────────────────────
+function exportCalendarMonth() {
+  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const y = calDate.getFullYear(), m = calDate.getMonth();
+  const monthLabel = `${MONTHS[m]} ${y}`;
+
+  // Collect astreintes for the month
+  let monthData = astreintes.filter(a => {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}`;
+    return a.debut.startsWith(ds) || a.fin.startsWith(ds) ||
+           (a.debut < ds + '-01' && a.fin > ds + '-31');
+  });
+  if (currentSiteFilter !== 'tous') monthData = monthData.filter(a => a.site === currentSiteFilter);
+
+  // Build printable HTML
+  const rows = monthData.map(a => {
+    const c = getCollab(a.collabId);
+    const eq = c ? getEquipe(c.equipe) : null;
+    if (!c) return '';
+    const statusMap = { active:'Actif', standby:'En attente', off:'Terminé' };
+    return `<tr>
+      <td>${c.prenom} ${c.nom}</td>
+      <td>${c.email}</td>
+      <td>${eq ? eq.nom : '—'}</td>
+      <td>${SITE_LABELS[a.site] || a.site}</td>
+      <td>${fmtDate(a.debut)}</td>
+      <td>${fmtDate(a.fin)}</td>
+      <td>${statusMap[a.status] || a.status}</td>
+      <td>${a.notes || ''}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Planning Astreintes — ${monthLabel}</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 30px; color: #111; }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  p.sub { color: #666; font-size: 0.85rem; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  thead tr { background: #4f7ef8; color: white; }
+  th, td { padding: 9px 12px; border: 1px solid #ddd; text-align: left; }
+  tbody tr:nth-child(even) { background: #f5f7ff; }
+  .badge { padding: 2px 8px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+  .active { background:#d1fae5; color:#065f46; }
+  .standby { background:#fef3c7; color:#92400e; }
+  .off { background:#f3f4f6; color:#6b7280; }
+  @media print { body { padding: 10px; } }
+</style>
+</head>
+<body>
+<h1>📅 Planning des Astreintes — ${monthLabel}</h1>
+<p class="sub">Généré le ${new Date().toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' })} — ${monthData.length} astreinte(s)${currentSiteFilter !== 'tous' ? ' · Site : ' + (SITE_LABELS[currentSiteFilter] || currentSiteFilter) : ''}</p>
+<table>
+  <thead>
+    <tr>
+      <th>Collaborateur</th><th>Email</th><th>Équipe</th><th>Site</th>
+      <th>Début</th><th>Fin</th><th>Statut</th><th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>${rows || '<tr><td colspan="8" style="text-align:center;color:#999">Aucune astreinte ce mois</td></tr>'}</tbody>
+</table>
+<div style="margin-top:20px;font-size:0.75rem;color:#aaa">Planning généré automatiquement par l'application Gestion des Astreintes</div>
+<script>window.onload=()=>window.print();<\/script>
+<!-- MANAGE SITES MODAL -->
+<div class="modal-overlay" id="modal-manage-sites">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">🗺️ Gérer les sites</div>
+      <button class="modal-close" onclick="closeModal('manage-sites')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div id="manage-sites-list" style="max-height:360px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-primary" onclick="closeModal('manage-sites');openModal('add-site')">+ Nouveau site</button>
+      <button class="btn btn-ghost" onclick="closeModal('manage-sites')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `planning-astreintes-${y}-${String(m+1).padStart(2,'0')}.html`;
+  a.click();
+  showToast(`📥 Planning de ${monthLabel} exporté (${monthData.length} astreinte(s))`);
+}
+
+// ── SEND PLANNING TO ALL ───────────────────────────────────────────────────────
+async function sendPlanningToAll() {
+  if (!appConfig.pa.webhook) {
+    showToast('⚠️ Configurez d\'abord un webhook Power Automate dans Configuration');
+    return;
+  }
+
+  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const y = calDate.getFullYear(), m = calDate.getMonth();
+  const monthLabel = `${MONTHS[m]} ${y}`;
+  const ds = `${y}-${String(m+1).padStart(2,'0')}`;
+
+  // Astreintes for this month
+  let monthA = astreintes.filter(a =>
+    a.debut.startsWith(ds) || a.fin.startsWith(ds) ||
+    (a.debut < ds + '-01' && a.fin > ds + '-31')
+  );
+  if (currentSiteFilter !== 'tous') monthA = monthA.filter(a => a.site === currentSiteFilter);
+
+  if (monthA.length === 0) {
+    showToast(`⚠️ Aucune astreinte en ${monthLabel} à envoyer`);
+    return;
+  }
+
+  // Build planning summary table (HTML for email)
+  const tableRows = monthA.map(a => {
+    const c = getCollab(a.collabId);
+    if (!c) return '';
+    const eq = getEquipe(c.equipe);
+    const statusTxt = { active:'Actif', standby:'En attente', off:'Terminé' }[a.status] || a.status;
+    return `<tr>
+      <td style="padding:7px 10px;border:1px solid #ddd">${c.prenom} ${c.nom}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd">${eq ? eq.nom : '—'}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd">${SITE_LABELS[a.site] || a.site}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd">${fmtDate(a.debut)}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd">${fmtDate(a.fin)}</td>
+      <td style="padding:7px 10px;border:1px solid #ddd">${statusTxt}</td>
+    </tr>`;
+  }).join('');
+
+  const planningHtml = `<table style="border-collapse:collapse;width:100%;font-family:Arial,sans-serif;font-size:0.9rem">
+    <thead><tr style="background:#4f7ef8;color:white">
+      <th style="padding:8px 10px">Collaborateur</th>
+      <th style="padding:8px 10px">Équipe</th>
+      <th style="padding:8px 10px">Site</th>
+      <th style="padding:8px 10px">Début</th>
+      <th style="padding:8px 10px">Fin</th>
+      <th style="padding:8px 10px">Statut</th>
+    </tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>`;
+
+  const planningText = monthA.map(a => {
+    const c = getCollab(a.collabId);
+    if (!c) return '';
+    const statusTxt = { active:'Actif', standby:'En attente', off:'Terminé' }[a.status] || a.status;
+    return `• ${c.prenom} ${c.nom} — ${SITE_LABELS[a.site] || a.site} — du ${fmtDate(a.debut)} au ${fmtDate(a.fin)} (${statusTxt})`;
+  }).filter(Boolean).join('\n');
+
+  // Get all unique collaborateurs concerned + all collabs as recipients
+  const allEmails = [...new Set(collaborateurs.filter(c => c.email).map(c => c.email))];
+
+  showToast(`📤 Envoi du planning à ${allEmails.length} collaborateur(s)...`);
+
+  const subject = `[Astreintes] Planning du mois de ${monthLabel}`;
+  const bodyText = `Bonjour,\n\nVeuillez trouver ci-dessous le planning des astreintes pour le mois de ${monthLabel} :\n\n${planningText}\n\nCordialement,\nLa Direction des Opérations`;
+
+  const payload = {
+    emailTo: allEmails.join(';'),
+    emailCC: '',
+    subject,
+    body: bodyText,
+    planningHtml,
+    mois: monthLabel,
+    nbAstreintes: monthA.length,
+    type: 'planning_mensuel'
+  };
+
+  try {
+    await fetch(appConfig.pa.webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      mode: 'no-cors'
+    });
+    showToast(`✅ Planning de ${monthLabel} envoyé à ${allEmails.length} collaborateur(s)`);
+  } catch(e) {
+    showToast('⚠️ Envoi échoué — vérifiez le webhook Power Automate');
+  }
+}
+
 // ── SITES MANAGEMENT ─────────────────────────────────────────────────────────
 
 function renderSidebarSites() {
   const list = document.getElementById('sidebar-sites-list');
-  // Rebuild — keep "tous" tag first
   list.innerHTML = `<div class="site-tag active" id="site-tag-tous" onclick="filterSite('tous',this)">
     <span class="site-dot" style="background:var(--muted)"></span>
-    Tous les sites
+    <span style="flex:1">Tous les sites</span>
     <span class="site-count" id="count-tous">-</span>
   </div>` + sites.map(s => `
-    <div class="site-tag" id="site-tag-${s.id}" onclick="filterSite('${s.id}',this)">
+    <div class="site-tag" id="site-tag-${s.id}" onclick="filterSite('${s.id}',this)" style="padding-right:4px">
       <span class="site-dot" style="background:${s.color}"></span>
-      ${s.label}
-      <span class="site-count" id="count-${s.id}">-</span>
-      <button onclick="event.stopPropagation();deleteSite('${s.id}')" title="Supprimer"
-        style="margin-left:2px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.7rem;padding:0 2px;opacity:0;transition:opacity 0.2s"
-        onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0">✕</button>
+      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.label}</span>
+      <span class="site-count" id="count-${s.id}" style="margin-left:0;flex-shrink:0">-</span>
+      <button onclick="event.stopPropagation();confirmDeleteSite('${s.id}')" title="Supprimer ce site"
+        style="flex-shrink:0;margin-left:4px;background:rgba(239,68,68,0.12);border:none;color:var(--danger);cursor:pointer;font-size:11px;font-weight:700;width:20px;height:20px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition:all 0.15s"
+        onmouseenter="this.style.background='rgba(239,68,68,0.28)';this.style.transform='scale(1.1)'" onmouseleave="this.style.background='rgba(239,68,68,0.12)';this.style.transform='scale(1)'">x</button>
     </div>`).join('');
   updateCounts();
   refreshSiteSelects();
@@ -2648,6 +3061,32 @@ function saveSite() {
   renderSidebarSites();
   if (document.getElementById('stat-sites')) document.getElementById('stat-sites').textContent = sites.length;
   showToast(`✅ Site "${label}" ajouté`);
+}
+
+function confirmDeleteSite(id) {
+  const s = sites.find(x => x.id === id);
+  if (!s) return;
+  const inUse = astreintes.some(a => a.site === id) || collaborateurs.some(c => c.site === id);
+  if (inUse) {
+    showToast('⚠️ Site utilisé par des astreintes ou collaborateurs — impossible de supprimer');
+    return;
+  }
+  // Show inline confirm
+  const btn = document.querySelector(`#site-tag-${id} button`);
+  if (btn) {
+    btn.textContent = '?';
+    btn.style.background = 'var(--danger)';
+    btn.style.color = '#fff';
+    btn.style.width = '38px';
+    btn.title = 'Confirmer la suppression';
+    btn.onclick = (e) => { e.stopPropagation(); deleteSite(id); };
+    setTimeout(() => { if (btn && btn.textContent === '?') {
+      btn.textContent = 'x'; btn.style.background = 'rgba(239,68,68,0.12)';
+      btn.style.color = 'var(--danger)'; btn.style.width = '20px';
+      btn.title = 'Supprimer ce site';
+      btn.onclick = (e) => { e.stopPropagation(); confirmDeleteSite(id); };
+    }}, 3000);
+  }
 }
 
 function deleteSite(id) {
@@ -2712,6 +3151,27 @@ function refreshLocalStorageStats() {
   if (ls) ls.textContent = getStorageUsage();
 }
 
+// ── RESPONSIVE SIDEBAR ────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const aside = document.querySelector('aside');
+  const btn = document.getElementById('hamburger-btn');
+  const overlay = document.getElementById('sidebar-overlay');
+  const isOpen = aside.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+  overlay.classList.toggle('visible', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+function closeSidebar() {
+  const aside = document.querySelector('aside');
+  const btn = document.getElementById('hamburger-btn');
+  const overlay = document.getElementById('sidebar-overlay');
+  aside.classList.remove('open');
+  btn.classList.remove('open');
+  overlay.classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
 function init() {
   applyStoredTheme();
   const d = new Date();
@@ -2742,5 +3202,22 @@ function init() {
 
 init();
 </script>
+<!-- MANAGE SITES MODAL -->
+<div class="modal-overlay" id="modal-manage-sites">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">🗺️ Gérer les sites</div>
+      <button class="modal-close" onclick="closeModal('manage-sites')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div id="manage-sites-list" style="max-height:360px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-primary" onclick="closeModal('manage-sites');openModal('add-site')">+ Nouveau site</button>
+      <button class="btn btn-ghost" onclick="closeModal('manage-sites')">Fermer</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
